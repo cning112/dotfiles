@@ -1,7 +1,16 @@
 [user]
-	name = w3cj
-	email = cj@null.computer
+	name = cning112
+	email = chao.ning.uk@gmail.com
 [core]
-	editor = nano
+	editor = vim
 [init]
 	defaultBranch = main
+
+[alias]
+# credit to https://stackoverflow.com/a/9074343/15853959
+lg1 = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all
+lg2 = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(auto)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)'
+lg = lg1
+
+# credit to https://stackoverflow.com/a/35075021/15853959
+adog = log --all --decorate --oneline --graph
