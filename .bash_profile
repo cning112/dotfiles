@@ -3,7 +3,7 @@ nvm use stable
 shopt -s autocd
 shopt -s histappend
 
-export PATH=$PATH:$HOME/bin
+export PATH=$PATH:$HOME/bin:/usr/local/texlive/2024/bin/universal-darwin
 
 export HISTSIZE=5000
 export HISTFILESIZE=10000
@@ -56,3 +56,19 @@ alias gcm='git commit -m'
 alias gpsh='git push'
 alias gss='git status -s'
 alias gs='echo ""; echo "*********************************************"; echo -e "   DO NOT FORGET TO PULL BEFORE COMMITTING"; echo "*********************************************"; echo ""; git status'
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/cning/anaconda3/anaconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/cning/anaconda3/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/cning/anaconda3/anaconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/cning/anaconda3/anaconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
