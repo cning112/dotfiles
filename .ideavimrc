@@ -1,66 +1,8 @@
-" Set the leader key, e.g. <Leader> is mapped to \ by default
-let mapleader = ","
 
-""" Plugins  --------------------------------
-set surround
-set multiple-cursors
-set commentary
-set argtextobj
-set easymotion
-set textobj-entire
-set ReplaceWithRegister
-set exchange
-" Trying the new syntax
-Plug 'machakann/vim-highlightedyank'
+" 加载通用配置文件
+source ~/.common_vimrc
 
-""" Plugin settings -------------------------
-let g:argtextobj_pairs="[:],(:),<:>"
-
-" <C-n> seems to me as a better solution than <M-n>,
-" but we should finally support vim-visual-multi because vim-multiple-cursors is deprecated now
-map <C-n> <Plug>NextWholeOccurrence
-
-""" Common settings -------------------------
-set showmode
-set so=5
-set incsearch
-set nu
-
-""" Idea specific settings ------------------
-set ideajoin
-set ideastatusicon=gray
-
-""" My Mappings -----------------------------
-map <leader>r <Action>(RenameElement)
-
-" Reformat the current line only
-map <leader>l V<Action>(ReformatCode)
-
-map <leader>b <Action>(ToggleLineBreakpoint)
-map <leader>o <Action>(FileStructurePopup)
-
-map <leader>J Ji <ESC>
-
-" Just makes me nervous
-map H h
-
-" Toggle case and start typing. E.g. `<leader>iget`: `property` -> `getProperty`
-map <leader>i ~hi
-" Remove selection and toggle case. E.g. `v2l<leader>u`: `getProperty` -> `property`
-vmap <leader>u d~h
-
-" I think it's a better solution
-map U <C-R>
-
-" EasyMotion configurations
-" Example: move to any character within the current line
-map <Leader>s <Plug>(easymotion-s2)
-" Example: move to any word within the current file
-map <Leader>w <Plug>(easymotion-w)
-" Example: move to any character within the current file
-map <Leader>f <Plug>(easymotion-f)
-" Example: move to the beginning of a line within the current file
-map <Leader>l <Plug>(easymotion-lineforward)
-" Example: move to the beginning of a line backward within the current file
-map <Leader>h <Plug>(easymotion-linebackward)
-
+" 仅适用于 IdeaVim 的特定配置
+if exists('g:ideavim_version')
+    " IdeaVim 专用配置
+endif

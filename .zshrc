@@ -8,6 +8,11 @@ plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
 
+# Load other configuration files
+source ~/.aliases
+source ~/.functions
+source ~/.path
+
 export EDITOR='vi'
 
 export PATH=$PATH:/usr/local/texlive/2024/bin/universal-darwin

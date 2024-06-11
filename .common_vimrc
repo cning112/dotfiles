@@ -1,0 +1,17 @@
+
+" 通用配置
+set number
+set relativenumber
+syntax on
+
+" 设置 leader 键，例如将 \ 设置为 ,
+let mapleader = ","
+
+" EasyMotion 配置
+nmap <Leader>s <Plug>(easymotion-s2)
+nmap <Leader>w <Plug>(easymotion-w)
+nmap <Leader>f <Plug>(easymotion-f)
+nmap <Leader>l <Plug>(easymotion-lineforward)
+nmap <Leader>h <Plug>(easymotion-linebackward)
+
+" 其他通用配置...
