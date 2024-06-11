@@ -1,6 +1,6 @@
 #! /bin/bash
 
-DOTFILES=(.bash_profile .gitconfig .gitignore .zshrc)
+DOTFILES=(.bash_profile .gitconfig .gitignore .zshrc .ideavimrc)
 
 for dotfile in $(echo ${DOTFILES[*]});
 do
