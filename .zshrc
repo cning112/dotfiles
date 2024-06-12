@@ -9,9 +9,9 @@ plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
 # Load other configuration files
-source ~/.aliases
-source ~/.functions
-source ~/.path
+#source ~/.aliases
+#source ~/.functions
+#source ~/.path
 
 export EDITOR='vi'
 
