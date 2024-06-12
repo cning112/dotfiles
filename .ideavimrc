@@ -3,8 +3,8 @@
 " 加载通用配置文件
 source ~/.common_vimrc
 
-" 在插入模式下由IDE处理快捷键
-sethandler a:vim i:ide
+" 由IDE处理快捷键
+sethandler i:ide
 
 
 " Refer to https://gist.github.com/AlexPl292/50a3ff4cef1badcbb23436b22cbd3cf4
