@@ -55,3 +55,8 @@ unset __conda_setup
 
 # Rust
 . "$HOME/.cargo/env"
+
+# Initialize warpify if available
+if command -v warpify &> /dev/null; then
+    eval "$(warpify init zsh)"
+fi
