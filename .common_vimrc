@@ -1,6 +1,6 @@
 
 " 通用配置
-syntax on                   " 启用语法高亮
+set nocompatible            " 关闭兼容模式
 set showmode                " 显示当前模式（插入模式、替换模式、视觉模式等）
 set so=5                    " 设置光标上下方至少可见的最少行数为 5 行
 set incsearch               " 启用增量搜索，实时显示搜索结果
@@ -9,6 +9,7 @@ set relativenumber          " 显示相对行号
 set wrap                    " 自动换行
 set cursorline              " 高亮当前行
 set background=dark         " 设置背景为暗色
+syntax on                   " 启用语法高亮
 colorscheme desert          " 设置配色方案
 
 " 使用系统剪贴板
