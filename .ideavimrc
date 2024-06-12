@@ -1,8 +1,55 @@
+" IdeaVim 专用配置
 
 " 加载通用配置文件
 source ~/.common_vimrc
 
-" 仅适用于 IdeaVim 的特定配置
-if exists('g:ideavim_version')
-    " IdeaVim 专用配置
-endif
+" 在插入模式下由IDE处理快捷键
+sethandler a:vim i:ide
+
+
+" Refer to https://gist.github.com/AlexPl292/50a3ff4cef1badcbb23436b22cbd3cf4
+""" Plugins  --------------------------------
+set surround
+set multiple-cursors
+set commentary
+set argtextobj
+set easymotion
+set textobj-entire
+set ReplaceWithRegister
+set exchange
+" Trying the new syntax
+Plug 'machakann/vim-highlightedyank'
+
+""" Plugin settings -------------------------
+let g:argtextobj_pairs="[:],(:),<:>"
+
+" <C-n> seems to me as a better solution than <M-n>,
+" but we should finally support vim-visual-multi because vim-multiple-cursors is deprecated now
+map <C-n> <Plug>NextWholeOccurrence
+
+""" Idea specific settings ------------------
+set ideajoin
+set ideastatusicon=gray
+
+""" My Mappings -----------------------------
+map <leader>r <Action>(RenameElement)
+
+" Reformat the current line only
+map <leader>l V<Action>(ReformatCode)
+
+map <leader>b <Action>(ToggleLineBreakpoint)
+map <leader>o <Action>(FileStructurePopup)
+
+map <leader>J Ji <ESC>
+
+" Just makes me nervous
+map H h
+
+" Toggle case and start typing. E.g. `<leader>iget`: `property` -> `getProperty`
+map <leader>i ~hi
+" Remove selection and toggle case. E.g. `v2l<leader>u`: `getProperty` -> `property`
+vmap <leader>u d~h
+
+" I think it's a better solution
+map U <C-R>
+

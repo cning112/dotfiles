@@ -1,17 +1,49 @@
 
 " 通用配置
-set number
-set relativenumber
-syntax on
+syntax on                   " 启用语法高亮
+set showmode                " 显示当前模式（插入模式、替换模式、视觉模式等）
+set so=5                    " 设置光标上下方至少可见的最少行数为 5 行
+set incsearch               " 启用增量搜索，实时显示搜索结果
+set number                  " 显示行号
+set relativenumber          " 显示相对行号
+set wrap                    " 自动换行
+set cursorline              " 高亮当前行
+set background=dark         " 设置背景为暗色
+colorscheme desert          " 设置配色方案
+
+" 使用系统剪贴板
+set clipboard=unnamedplus
+" 将 y 映射为复制到系统剪贴板
+nnoremap y "+y
+vnoremap y "+y
+" 将 p 映射为从系统剪贴板粘贴
+nnoremap p "+p
+vnoremap p "+p
+
+" 设置 Tab 键相关配置
+set tabstop=4               " 设置 Tab 键的宽度为 4 个空格
+set shiftwidth=4            " 设置自动缩进的空格数为 4
+set expandtab               " 将 Tab 字符转换为空格
+
+" 其他缩进设置
+set autoindent              " 自动缩进
+set smartindent             " 智能缩进
+
 
 " 设置 leader 键，例如将 \ 设置为 ,
 let mapleader = ","
 
 " EasyMotion 配置
-nmap <Leader>s <Plug>(easymotion-s2)
-nmap <Leader>w <Plug>(easymotion-w)
-nmap <Leader>f <Plug>(easymotion-f)
-nmap <Leader>l <Plug>(easymotion-lineforward)
-nmap <Leader>h <Plug>(easymotion-linebackward)
+" move to any 2 characters within the current line
+map <Leader>s <Plug>(easymotion-s2)
+" move to any word within the current file
+map <Leader>w <Plug>(easymotion-w)
+" move to any character within the current file
+map <Leader>f <Plug>(easymotion-f)
+" move to the beginning of a line within the current file
+map <Leader>l <Plug>(easymotion-lineforward)
+" move to the beginning of a line backward within the current file
+map <Leader>h <Plug>(easymotion-linebackward)
+
 
 " 其他通用配置...
