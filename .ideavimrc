@@ -1,7 +1,9 @@
 " IdeaVim 专用配置
 
 " 加载通用配置文件
-source ~/.common_vimrc
+if filereadable(expand("~/.common_vimrc"))
+    source ~/.common_vimrc
+endif
 
 " 由IDE处理快捷键
 sethandler i:ide

@@ -1,3 +1,14 @@
 export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+
+CONDA_PATH="$HOME/miniconda3"
+if [ -d "$CONDA_PATH" ]; then
+    export PATH="$CONDA_PATH/bin:$PATH"
+fi
+
 export PATH="/usr/local/texlive/2024/bin/universal-darwin:$PATH"
+
+
+# 移除 $PATH 中的重复路径
+export PATH="$(echo "$PATH" | /usr/bin/awk 'BEGIN { RS=":"; } { sub(sprintf("%c$", 10), ""); if (A[$0]) {} else { A[$0]=1; printf(((NR==1) ?"" : ":") $0) }}')"
+
