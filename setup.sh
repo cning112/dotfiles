@@ -209,8 +209,11 @@ install_software() {
     elif [ -n "$BASH_VERSION" ]; then
         source "$HOME/.bash_profile"
     fi
-
+    
+    echo "=================================================="
     echo "Dotfiles setup completed successfully."
+    echo "Restrat your shell (bash or zsh) to apply the settings"
+    echo "=================================================="
 }
 
 if [ "$OS_TYPE" = "Darwin" ]; then
