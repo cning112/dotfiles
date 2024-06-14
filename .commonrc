@@ -27,16 +27,13 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
-# Initialize warpify if available
-if command -v warpify &> /dev/null; then
-    eval "$(warpify init bash)"
-    eval "$(warpify init zsh)"
-fi
-
 # Initialize zoxide if available
 if command -v zoxide &> /dev/null; then
-    eval "$(zoxide init bash)"
-    eval "$(zoxide init zsh)"
+    if [ -n "$ZSH_VERSION" ]; then
+        eval "$(zoxide init zsh)"
+    elif [ -n "$BASH_VERSION" ]; then
+        eval "$(zoxide init bash)"
+    fi
 fi
 
 # Rust 和 Cargo 环境变量（如果已安装）

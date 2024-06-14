@@ -1,34 +1,9 @@
-shopt -s autocd
-shopt -s histappend
+# 加载系统范围的配置文件
+if [ -f /etc/profile ]; then
+    . /etc/profile
+fi
 
-export HISTSIZE=5000
-export HISTFILESIZE=10000
-
-bind '"\e[A": history-search-backward'
-bind '"\e[B": history-search-forward'
-
-export CLICOLOR=1
-export LSCOLORS=GxFxCxDxBxegedabagaced
-
-txtred='\e[0;31m' # Red
-txtgrn='\e[0;32m' # Green
-bldgrn='\e[1;32m' # Bold Green
-bldpur='\e[1;35m' # Bold Purple
-txtrst='\e[0m'    # Text Reset
-
-emojis=("👾" "🌐" "🎲" "🌍" "🐉" "🌵")
-
-EMOJI=${emojis[$RANDOM % ${#emojis[@]} ]}
-
-print_before_the_prompt () {
-    dir=$PWD
-    home=$HOME
-    dir=${dir/"$HOME"/"~"}
-    printf "\n $txtred%s: $bldpur%s $txtgrn%s\n$txtrst" "$HOST_NAME" "$dir" "$(vcprompt)"
-}
-
-PROMPT_COMMAND=print_before_the_prompt
-PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
-PS1="$EMOJI >"
-
-source ~/.commonrc
+# 加载用户的 .bashrc
+if [ -f "$HOME/.bashrc" ]; then
+    . "$HOME/.bashrc"
+fi

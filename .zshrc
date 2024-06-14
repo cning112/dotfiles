@@ -17,3 +17,6 @@ source $ZSH/oh-my-zsh.sh
 source ~/.commonrc
 
 export EDITOR='vi'
+
+# Always Warpify the subshell
+printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "zsh" }}\x9c'
