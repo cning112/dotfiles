@@ -34,17 +34,5 @@ set smartindent             " 智能缩进
 " 设置 leader 键，例如将 \ 设置为 ,
 let mapleader = ","
 
-" EasyMotion 配置
-" move to any 2 characters within the current line
-map <Leader>s <Plug>(easymotion-s2)
-" move to any word within the current file
-map <Leader>w <Plug>(easymotion-w)
-" move to any character within the current file
-map <Leader>f <Plug>(easymotion-f)
-" move to the beginning of a line within the current file
-map <Leader>l <Plug>(easymotion-lineforward)
-" move to the beginning of a line backward within the current file
-map <Leader>h <Plug>(easymotion-linebackward)
-
 
 " 其他通用配置...
