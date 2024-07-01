@@ -180,6 +180,23 @@ install_software() {
         echo "Miniconda is already installed and not empty."
     fi
 
+    # 安装 AWS CLI
+    if ! command -v aws &> /dev/null; then
+        echo "Installing AWS CLI..."
+        if [ "$OS_TYPE" = "Darwin" ]; then
+            curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+            sudo installer -pkg "AWSCLIV2.pkg" -target /
+            rm "AWSCLIV2.pkg"
+        elif [ "$OS_TYPE" = "Linux" ]; then
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+            rm -rf awscliv2.zip aws
+        fi
+    else
+        echo "AWS CLI is already installed."
+    fi
+
     echo "Creating necessary directories..."
     mkdir -p "$HOME/.config/nvim"
 
