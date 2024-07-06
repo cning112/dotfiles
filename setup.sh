@@ -9,84 +9,13 @@ OS_TYPE=$(uname)
 echo "Operating System: $OS_TYPE"
 
 # 安装 Homebrew（如果尚未安装），并在 Linux 上添加 Linuxbrew 路径
-install_homebrew() {
-    if ! command -v brew &> /dev/null; then
-        echo "Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        # 确保 Homebrew 路径被添加到 PATH
-        if [ "$OS_TYPE" = "Darwin" ]; then
-            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
-            eval "$(/opt/homebrew/bin/brew shellenv)"
-        elif [ "$OS_TYPE" = "Linux" ]; then
-            echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "$HOME/.profile"
-            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-        fi
-    fi
-
-    if [ "$OS_TYPE" = "Linux" ]; then
-        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-        test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
-        test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-    fi
+setup_brew() {
+    source "${SCRIPT_DIR}/setup_brew.sh"
 }
 
 # 安装 Bash 和 Zsh
-install_bash_zsh() {
-    echo "Installing jq..."
-    brew install jq
-
-    # 获取 Homebrew 的安装路径
-    HOMEBREW_PREFIX=$(brew --prefix)
-
-    if brew list --versions bash &> /dev/null; then
-        echo "Bash is already installed"
-        INSTALLED_BASH_VERSION=$(brew list --versions bash | awk '{print $2}')
-        LATEST_BASH_VERSION=$(brew info bash --json=v1 | jq -r '.[0].versions.stable')
-        if [ "$INSTALLED_BASH_VERSION" != "$LATEST_BASH_VERSION" ]; then
-            echo "Updating Bash to the latest version..."
-            brew upgrade bash
-        else
-            echo "Bash is already the latest version ($INSTALLED_BASH_VERSION)"
-        fi
-    else
-        echo "Installing the latest version of Bash..."
-        brew install bash
-    fi
-
-    if brew list --versions zsh &> /dev/null; then
-        echo "Zsh is already installed"
-        INSTALLED_ZSH_VERSION=$(brew list --versions zsh | awk '{print $2}')
-        LATEST_ZSH_VERSION=$(brew info zsh --json=v1 | jq -r '.[0].versions.stable')
-        if [ "$INSTALLED_ZSH_VERSION" != "$LATEST_ZSH_VERSION" ]; then
-            echo "Updating Zsh to the latest version..."
-            brew upgrade zsh
-        else
-            echo "Zsh is already the latest version ($INSTALLED_ZSH_VERSION)"
-        fi
-    else
-        echo "Installing the latest version of Zsh..."
-        brew install zsh
-    fi
-
-    # 添加 Bash 到 /etc/shells
-    if ! grep -Fxq "$HOMEBREW_PREFIX/bin/bash" /etc/shells; then
-        echo "Adding $HOMEBREW_PREFIX/bin/bash to /etc/shells..."
-        sudo bash -c "echo $HOMEBREW_PREFIX/bin/bash >> /etc/shells"
-    fi
-
-    # 添加 Zsh 到 /etc/shells
-    if ! grep -Fxq "$HOMEBREW_PREFIX/bin/zsh" /etc/shells; then
-        echo "Adding $HOMEBREW_PREFIX/bin/zsh to /etc/shells..."
-        sudo bash -c "echo $HOMEBREW_PREFIX/bin/zsh >> /etc/shells"
-    fi
-
-    # 更改默认 shell 为 Homebrew 安装的 Zsh
-    if [ "$SHELL" != "$HOMEBREW_PREFIX/bin/zsh" ]; then
-        echo "Changing the default shell to $HOMEBREW_PREFIX/bin/zsh..."
-        chsh -s "$HOMEBREW_PREFIX/bin/zsh"
-    else
-        echo "Default shell is already $HOMEBREW_PREFIX/bin/zsh"
-    fi
+setup_shells() {
+    source "${SCRIPT_DIR}/setup_shells.sh"
 }
 
 # 安装必要的软件
@@ -100,7 +29,7 @@ install_software() {
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
     # 安装 Vim
-    if brew list --versions vim &> /dev/null; then
+    if brew list --versions vim &> /dev/null 2>&1; then
         echo "Vim is already installed"
         INSTALLED_VIM_VERSION=$(brew list --versions vim | awk '{print $2}')
         LATEST_VIM_VERSION=$(brew info vim --json=v1 | jq -r '.[0].versions.stable')
@@ -116,7 +45,7 @@ install_software() {
     fi
 
     # 安装 Neovim
-    if brew list --versions neovim &> /dev/null; then
+    if brew list --versions neovim &> /dev/null 2>&1; then
         echo "Neovim is already installed"
         INSTALLED_NVIM_VERSION=$(brew list --versions neovim | awk '{print $2}')
         LATEST_NVIM_VERSION=$(brew info neovim --json=v1 | jq -r '.[0].versions.stable')
@@ -138,7 +67,7 @@ install_software() {
         fi
     fi
 
-    if ! command -v zoxide &> /dev/null; then
+    if ! command -v zoxide &> /dev/null 2>&1; then
         echo "Installing zoxide..."
         curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
     fi
@@ -155,7 +84,7 @@ install_software() {
         rm install.sh
     fi
 
-    if ! command -v rustup &> /dev/null; then
+    if ! command -v rustup &> /dev/null 2>&1; then
         echo "Installing Rust..."
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         source "$HOME/.cargo/env"
@@ -181,7 +110,7 @@ install_software() {
     fi
 
     # 安装 AWS CLI
-    if ! command -v aws &> /dev/null; then
+    if ! command -v aws &> /dev/null 2>&1; then
         echo "Installing AWS CLI..."
         if [ "$OS_TYPE" = "Darwin" ]; then
             curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
@@ -234,12 +163,12 @@ install_software() {
 }
 
 if [ "$OS_TYPE" = "Darwin" ]; then
-    install_homebrew
-    install_bash_zsh
+    setup_brew
+    setup_shells
     install_software
 elif [ "$OS_TYPE" = "Linux" ]; then
-    install_homebrew
-    install_bash_zsh
+    setup_brew
+    setup_shells
     install_software
 else
     echo "Unsupported operating system: $OS_TYPE"
