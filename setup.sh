@@ -131,6 +131,8 @@ install_software() {
 
     echo "Creating symbolic links..."
     ln -sf "$SCRIPT_DIR/.vimrc" "$HOME/.vimrc"
+    mkdir -p "$HOME/.config/nvim"
+    ln -sf "$SCRIPT_DIR/.vimrc" "$HOME/.config/nvim/init.vim"
     ln -sf "$SCRIPT_DIR/.zshrc" "$HOME/.zshrc"
     ln -sf "$SCRIPT_DIR/.gitconfig" "$HOME/.gitconfig"
     ln -sf "$SCRIPT_DIR/.gitignore" "$HOME/.gitignore"

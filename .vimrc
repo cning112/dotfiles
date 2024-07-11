@@ -5,6 +5,7 @@ if filereadable(expand("~/.common_vimrc"))
 endif
 
 " 使用 vim-plug 管理插件
+" run :PlugInstall
 call plug#begin('~/.vim/plugged')
 " 安装 surround 插件
 Plug 'tpope/vim-surround'
