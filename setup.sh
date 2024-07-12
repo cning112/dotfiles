@@ -176,3 +176,5 @@ else
     echo "Unsupported operating system: $OS_TYPE"
     exit 1
 fi
+
+echo "Install other apps using brew: ./install_brew_apps.sh apps.txt"

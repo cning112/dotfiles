@@ -11,10 +11,12 @@ wget
 telnet
 tldr
 stats
-#hiddenbar
 chatgpt
 alt-tab
 git-credential-manager
+orbstack
+minikube
+boop
 
 #slack
 #discord
@@ -22,3 +24,5 @@ git-credential-manager
 #vlc
 #visual-studio-code
 #sublime-text
+
+#hiddenbar  # need to install in AppStore
