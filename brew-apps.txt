@@ -23,6 +23,7 @@ helm
 
 chatgpt
 boop
+zed
 
 #slack
 #discord

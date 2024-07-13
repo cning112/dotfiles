@@ -15,6 +15,7 @@ lg = lg1
 
 # credit to https://stackoverflow.com/a/35075021/15853959
 adog = log --all --decorate --oneline --graph
+
 [filter "lfs"]
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
