@@ -5,7 +5,6 @@ alias l="ls" # List files in current directory
 alias ll="ls -al" # List all files in current directory in long list format
 alias o="open ." # Open the current directory in Finder
 alias vi="nvim"
-alias kubectl="minikube kubectl --"
 
 # --------------------------------------------------------
 # Git Aliases
@@ -41,30 +40,24 @@ if [ -s "$HOME/.nvm/nvm.sh" ]; then
 fi
 
 # Miniconda3
+if [ -s "$HOME/miniconda3" ]; then
 # >>> conda initialize >>>
-export CONDA_PATH="$HOME/miniconda3"
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('$CONDA_PATH/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "$CONDA_PATH/etc/profile.d/conda.sh" ]; then
-        . "$CONDA_PATH/etc/profile.d/conda.sh"
+    export CONDA_PATH="$HOME/miniconda3"
+    # !! Contents within this block are managed by 'conda init' !!
+    __conda_setup="$('$CONDA_PATH/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__conda_setup"
     else
-        export PATH="$CONDA_PATH/bin:$PATH"
+        if [ -f "$CONDA_PATH/etc/profile.d/conda.sh" ]; then
+            . "$CONDA_PATH/etc/profile.d/conda.sh"
+        else
+            export PATH="$CONDA_PATH/bin:$PATH"
+        fi
     fi
-fi
-unset __conda_setup
+    unset __conda_setup
 # <<< conda initialize <<<
-
-# zoxide
-if command -v zoxide &> /dev/null; then
-    if [ -n "$ZSH_VERSION" ]; then
-        eval "$(zoxide init zsh)"
-    elif [ -n "$BASH_VERSION" ]; then
-        eval "$(zoxide init bash)"
-    fi
 fi
+
 
 # Rust & Cargo
 if [ -s "$HOME/.cargo/env" ]; then
@@ -78,12 +71,23 @@ fi
 export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
-CONDA_PATH="$HOME/miniconda3"
-if [ -d "$CONDA_PATH" ]; then
+if [ -d "$HOME/miniconda3" ]; then
     export PATH="$CONDA_PATH/bin:$PATH"
 fi
 
-export PATH="/usr/local/texlive/2024/bin/universal-darwin:$PATH"
-
 # Deduplicate $PATH
 export PATH="$(echo "$PATH" | /usr/bin/awk 'BEGIN { RS=":"; } { sub(sprintf("%c$", 10), ""); if (A[$0]) {} else { A[$0]=1; printf(((NR==1) ?"" : ":") $0) }}')"
+
+
+
+# --------------------------------------------------------
+# More tools after PATH is set
+# --------------------------------------------------------
+# zoxide
+if command -v zoxide &> /dev/null; then
+    if [ -n "$ZSH_VERSION" ]; then
+        eval "$(zoxide init zsh)"
+    elif [ -n "$BASH_VERSION" ]; then
+        eval "$(zoxide init bash)"
+    fi
+fi
