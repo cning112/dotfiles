@@ -11,11 +11,15 @@ wget
 telnet
 tldr
 stats
-chatgpt
 alt-tab
+
 git-credential-manager
 orbstack
+kubectl
 minikube
+helm
+
+chatgpt
 boop
 
 #slack
