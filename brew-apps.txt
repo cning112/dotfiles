@@ -1,7 +1,9 @@
-raycast
 warp
 iterm2
 nvim
+fzf
+
+raycast
 keka
 kap
 keycastr

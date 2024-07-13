@@ -35,3 +35,6 @@ source ~/.commonrc
 
 # Always Warpify the subshell
 printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "bash" }}\x9c'
+
+# Set up fzf key bindings and fuzzy completion
+eval "$(fzf --bash)"

@@ -20,3 +20,6 @@ export EDITOR='vi'
 
 # Always Warpify the subshell
 printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "zsh" }}\x9c'
+
+# Set up fzf key bindings and fuzzy completion
+source <(fzf --zsh)
