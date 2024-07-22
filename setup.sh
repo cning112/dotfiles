@@ -74,7 +74,7 @@ install_software() {
 
     if [ ! -d "$HOME/.nvm" ]; then
         echo "Installing NVM..."
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh -o install.sh
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh -o install.sh
         chmod +x install.sh
         if [ -n "$ZSH_VERSION" ]; then
             zsh install.sh
@@ -164,10 +164,18 @@ install_software() {
     echo "=================================================="
 }
 
+
+extra_macos_setup() {
+    # turn off accent chars by holding a key
+    defaults write -g ApplePressAndHoldEnabled -bool false
+}
+
+
 if [ "$OS_TYPE" = "Darwin" ]; then
     setup_brew
     setup_shells
     install_software
+    extra_macos_setup
 elif [ "$OS_TYPE" = "Linux" ]; then
     setup_brew
     setup_shells
