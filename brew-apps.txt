@@ -25,6 +25,8 @@ chatgpt
 boop
 zed
 
+ruff
+
 #slack
 #discord
 #figma
