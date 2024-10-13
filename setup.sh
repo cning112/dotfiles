@@ -90,24 +90,26 @@ install_software() {
         source "$HOME/.cargo/env"
     fi
 
-    if [ ! -d "$HOME/miniconda3" ] || [ -z "$(ls -A $HOME/miniconda3)" ]; then
-        echo "Installing Miniconda..."
-        mkdir -p $HOME/miniconda3
-        if [ "$OS_TYPE" = "Darwin" ]; then
-            curl -o "$HOME/miniconda.sh" https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh
-        elif [ "$OS_TYPE" = "Linux" ]; then
-            curl -o "$HOME/miniconda.sh" -sS https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-        fi
-        bash "$HOME/miniconda.sh" -b -u -p "$HOME/miniconda3"
-        if [ $? -ne 0 ]; then
-            echo "Miniconda installation failed."
-        else
-            echo "Miniconda installation succeeded."
-        fi
-        rm "$HOME/miniconda.sh"
-    else
-        echo "Miniconda is already installed and not empty."
-    fi
+    # TEMPORARY CHANGE: not to install conda by defualt and give rye a try
+    #if [ ! -d "$HOME/miniconda3" ] || [ -z "$(ls -A $HOME/miniconda3)" ]; then
+    #    echo "Installing Miniconda..."
+    #    mkdir -p $HOME/miniconda3
+    #    if [ "$OS_TYPE" = "Darwin" ]; then
+    #        curl -o "$HOME/miniconda.sh" https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh
+    #    elif [ "$OS_TYPE" = "Linux" ]; then
+    #        curl -o "$HOME/miniconda.sh" -sS https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    #    fi
+    #    bash "$HOME/miniconda.sh" -b -u -p "$HOME/miniconda3"
+    #    if [ $? -ne 0 ]; then
+    #        echo "Miniconda installation failed."
+    #    else
+    #        echo "Miniconda installation succeeded."
+    #    fi
+    #    rm "$HOME/miniconda.sh"
+    #else
+    #    echo "Miniconda is already installed and not empty."
+    #fi
+
 
     # 安装 AWS CLI
     if ! command -v aws &> /dev/null 2>&1; then
@@ -125,9 +127,6 @@ install_software() {
     else
         echo "AWS CLI is already installed."
     fi
-
-    echo "Creating necessary directories..."
-    mkdir -p "$HOME/.config/nvim"
 
     echo "Creating symbolic links..."
     ln -sf "$SCRIPT_DIR/.vimrc" "$HOME/.vimrc"
@@ -154,8 +153,32 @@ install_software() {
     echo "Sourcing shell configuration..."
     if [ -n "$ZSH_VERSION" ]; then
         source "$HOME/.zshrc"
+        # 添加 ~/.zfunc 到 fpath
+        mkdir -p $HOME/.zfunc
+        fpath=($HOME/.zfunc $fpath)
+        # 初始化自动补全功能
+        autoload -Uz compinit
+        compinit
     elif [ -n "$BASH_VERSION" ]; then
         source "$HOME/.bash_profile"
+    fi
+
+
+    # Install the latest rye
+    if [ ! -d "$HOME/.rye" ] || [ -z "$(ls -A $HOME/.rye)" ]; then
+        curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash
+
+        # ZSH
+        # Make sure ~/.zfunc is added to fpath, before compinit.
+        # Generate completion script for zsh 
+        rye self completion -s zsh > ~/.zfunc/_rye
+        # Generate completion script for oh-my-zsh
+        mkdir $ZSH_CUSTOM/plugins/rye
+        rye self completion -s zsh > $ZSH_CUSTOM/plugins/rye/_rye
+
+        # BASH
+        mkdir -p ~/.local/share/bash-completion/completions
+        rye self completion > ~/.local/share/bash-completion/completions/rye.bash
     fi
     
     echo "=================================================="
