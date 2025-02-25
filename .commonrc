@@ -2,7 +2,7 @@
 # Aliases
 # --------------------------------------------------------
 alias l="ls" # List files in current directory
-alias ll="ls -al" # List all files in current directory in long list format
+alias ll="ls -alh" # List all files in current directory in long list format
 alias o="open ." # Open the current directory in Finder
 alias vi="nvim"
 
@@ -39,26 +39,6 @@ if [ -d "$HOME/.nvm" ]; then
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 fi
 
-# Miniconda3
-if [ -s "$HOME/miniconda3" ]; then
-# >>> conda initialize >>>
-    export CONDA_PATH="$HOME/miniconda3"
-    # !! Contents within this block are managed by 'conda init' !!
-    __conda_setup="$('$CONDA_PATH/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-    if [ $? -eq 0 ]; then
-        eval "$__conda_setup"
-    else
-        if [ -f "$CONDA_PATH/etc/profile.d/conda.sh" ]; then
-            . "$CONDA_PATH/etc/profile.d/conda.sh"
-        else
-            export PATH="$CONDA_PATH/bin:$PATH"
-        fi
-    fi
-    unset __conda_setup
-# <<< conda initialize <<<
-fi
-
-
 # Rust & Cargo
 if [ -s "$HOME/.cargo/env" ]; then
     source "$HOME/.cargo/env"
@@ -70,6 +50,10 @@ fi
 # --------------------------------------------------------
 export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+
+if [ -d "/opt/homebrew/bin" ]; then
+    export PATH="/opt/homebrew/bin:$PATH"
+fi
 
 if [ -d "$HOME/miniconda3" ]; then
     export PATH="$CONDA_PATH/bin:$PATH"

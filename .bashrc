@@ -38,3 +38,6 @@ printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "bash" }}\x9c'
 
 # Set up fzf key bindings and fuzzy completion
 eval "$(fzf --bash)"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/cning/.lmstudio/bin"

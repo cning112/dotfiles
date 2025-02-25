@@ -1,1 +1,2 @@
-
+#export LDFLAGS="-L/opt/homebrew/opt/lzo/lib -L/opt/homebrew/opt/bzip2/lib -L/opt/homebrew/opt/libomp/lib"
+#export CPPFLAGS="-I/opt/homebrew/opt/lzo/include -I/opt/homebrew/opt/bzip2/include -I/opt/homebrew/opt/libomp/include"

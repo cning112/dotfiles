@@ -25,3 +25,5 @@ set ideastatusicon=gray
 
 " 由IDE处理快捷键
 sethandler i:ide n:ide v:ide
+
+scrolloff=0
