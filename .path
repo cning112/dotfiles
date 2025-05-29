@@ -1,2 +1,12 @@
 #export LDFLAGS="-L/opt/homebrew/opt/lzo/lib -L/opt/homebrew/opt/bzip2/lib -L/opt/homebrew/opt/libomp/lib"
 #export CPPFLAGS="-I/opt/homebrew/opt/lzo/include -I/opt/homebrew/opt/bzip2/include -I/opt/homebrew/opt/libomp/include"
+
+# LLVM
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
+
+# WASM
+export CC_wasm32_unknown_unknown="/opt/homebrew/opt/llvm/bin/clang"
+export AR_wasm32_unknown_unknown="/opt/homebrew/opt/llvm/bin/llvm-ar"
+export CFLAGS_wasm32_unknown_unknown="--target=wasm32-unknown-unknown"

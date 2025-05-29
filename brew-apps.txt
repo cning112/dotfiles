@@ -19,6 +19,7 @@ alt-tab
 git-credential-manager
 orbstack
 kubectl
+llvm
 minikube
 helm
 
