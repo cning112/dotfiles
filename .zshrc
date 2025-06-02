@@ -12,6 +12,10 @@ plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
 
+###################################
+# disable auto-correction of command and args
+unsetopt correct
+unsetopt correct_all
 
 ###################################
 source $HOME/.commonrc
@@ -43,3 +47,7 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
+
+fpath+=~/.zfunc; autoload -Uz compinit; compinit
+
+zstyle ':completion:*' menu select
