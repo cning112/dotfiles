@@ -1,12 +1,48 @@
-#export LDFLAGS="-L/opt/homebrew/opt/lzo/lib -L/opt/homebrew/opt/bzip2/lib -L/opt/homebrew/opt/libomp/lib"
-#export CPPFLAGS="-I/opt/homebrew/opt/lzo/include -I/opt/homebrew/opt/bzip2/include -I/opt/homebrew/opt/libomp/include"
+# NVM
+if [ -d "$HOME/.nvm" ]; then
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+fi
 
-# LLVM
-export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
-export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
+# Rust & Cargo
+if [ -s "$HOME/.cargo/env" ]; then
+    source "$HOME/.cargo/env"
+fi
 
-# WASM
-export CC_wasm32_unknown_unknown="/opt/homebrew/opt/llvm/bin/clang"
-export AR_wasm32_unknown_unknown="/opt/homebrew/opt/llvm/bin/llvm-ar"
-export CFLAGS_wasm32_unknown_unknown="--target=wasm32-unknown-unknown"
+# Conda
+export CONDA_PATH="$HOME/miniconda3"
+if [ -f "$CONDA_PATH/etc/profile.d/conda.sh" ]; then
+    . "$CONDA_PATH/etc/profile.d/conda.sh"
+    conda config --set auto_activate_base false >/dev/null 2>&1
+else
+    export PATH="$CONDA_PATH/bin:$PATH"
+fi
+
+# LM Studio CLI
+if [ -d "$HOME/.lmstudio/bin" ]; then
+    export PATH="$PATH:$HOME/.lmstudio/bin"
+fi
+
+# Homebrew
+if [ -d "/opt/homebrew/bin" ]; then
+    export PATH="/opt/homebrew/bin:$PATH"
+fi
+
+# Initialize warpify if available
+if command -v warpify &> /dev/null; then
+    if [ -n "$ZSH_VERSION" ]; then
+        eval "$(warpify init zsh)"
+    elif [ -n "$BASH_VERSION" ]; then
+        eval "$(warpify init bash)"
+    fi
+fi
+
+# Initialize zoxide if available
+if command -v zoxide &> /dev/null; then
+    if [ -n "$ZSH_VERSION" ]; then
+        eval "$(zoxide init zsh)"
+    elif [ -n "$BASH_VERSION" ]; then
+        eval "$(zoxide init bash)"
+    fi
+fi

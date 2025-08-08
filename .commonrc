@@ -1,27 +1,4 @@
 # --------------------------------------------------------
-# Aliases
-# --------------------------------------------------------
-alias l="ls" # List files in current directory
-alias ll="ls -alh" # List all files in current directory in long list format
-alias o="open ." # Open the current directory in Finder
-alias vi="nvim"
-
-# --------------------------------------------------------
-# Git Aliases
-# --------------------------------------------------------
-alias gaa='git add .'
-alias gcm='git commit -m'
-alias gpsh='git push'
-alias gss='git status -s'
-alias gs='echo ""; echo "*********************************************"; echo -e "   DO NOT FORGET TO PULL BEFORE COMMITTING"; echo "*********************************************"; echo ""; git status'
-
-
-# --------------------------------------------------------
-# Functions
-# --------------------------------------------------------
-
-
-# --------------------------------------------------------
 # Load other configuration files
 # --------------------------------------------------------
 if [ -s "$HOME/.path" ]; then source $HOME/.path; fi
@@ -30,48 +7,21 @@ if [ -s "$HOME/.functions" ]; then source $HOME/.functions; fi
 
 
 # --------------------------------------------------------
-# Tools & Softwares
-# --------------------------------------------------------
-# NVM
-if [ -d "$HOME/.nvm" ]; then
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-fi
-
-# Rust & Cargo
-if [ -s "$HOME/.cargo/env" ]; then
-    source "$HOME/.cargo/env"
-fi
-
-
-# --------------------------------------------------------
-# PATH
+# More ENV
 # --------------------------------------------------------
 export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
-if [ -d "/opt/homebrew/bin" ]; then
-    export PATH="/opt/homebrew/bin:$PATH"
-fi
+# LLVM
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
 
-if [ -d "$HOME/miniconda3" ]; then
-    export PATH="$CONDA_PATH/bin:$PATH"
-fi
+# WASM
+export CC_wasm32_unknown_unknown="/opt/homebrew/opt/llvm/bin/clang"
+export AR_wasm32_unknown_unknown="/opt/homebrew/opt/llvm/bin/llvm-ar"
+export CFLAGS_wasm32_unknown_unknown="--target=wasm32-unknown-unknown"
+
 
 # Deduplicate $PATH
 export PATH="$(echo "$PATH" | /usr/bin/awk 'BEGIN { RS=":"; } { sub(sprintf("%c$", 10), ""); if (A[$0]) {} else { A[$0]=1; printf(((NR==1) ?"" : ":") $0) }}')"
-
-
-
-# --------------------------------------------------------
-# More tools after PATH is set
-# --------------------------------------------------------
-# zoxide
-if command -v zoxide &> /dev/null; then
-    if [ -n "$ZSH_VERSION" ]; then
-        eval "$(zoxide init zsh)"
-    elif [ -n "$BASH_VERSION" ]; then
-        eval "$(zoxide init bash)"
-    fi
-fi
