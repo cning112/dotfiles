@@ -145,7 +145,7 @@ install_software() {
     ln -sf "$SCRIPT_DIR/.ideavimrc" "$HOME/.ideavimrc"
     ln -sf "$SCRIPT_DIR/.aliases" "$HOME/.aliases"
     ln -sf "$SCRIPT_DIR/.functions" "$HOME/.functions"
-    ln -sf "$SCRIPT_DIR/.path" "$HOME/.path"
+    ln -sf "$SCRIPT_DIR/.tools" "$HOME/.tools"
 
     echo "Installing Vim and Neovim plugins..."
     vim +PlugInstall +qall
