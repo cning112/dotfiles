@@ -11,7 +11,7 @@ Shell configuration for macOS and WSL2 (Ubuntu). Managed via symlinks so changes
 xcode-select --install
 
 # 2. Clone this repo
-git clone https://github.com/YOUR_USERNAME/dotfiles ~/dev/dotfiles
+git clone https://github.com/cning112/dotfiles ~/dev/dotfiles
 cd ~/dev/dotfiles
 
 # 3. Run setup (installs Homebrew, shells, tools, creates symlinks)
@@ -28,7 +28,7 @@ cd ~/dev/dotfiles
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # 2. Clone this repo
-git clone https://github.com/YOUR_USERNAME/dotfiles ~/dev/dotfiles
+git clone https://github.com/cning112/dotfiles ~/dev/dotfiles
 cd ~/dev/dotfiles
 
 # 3. Run setup
