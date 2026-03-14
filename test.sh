@@ -59,7 +59,7 @@ done
 # --------------------------------------------------------
 section "Recommended CLI tools"
 # --------------------------------------------------------
-OPTIONAL=(fd bat tree lazygit tmux starship direnv mise)
+OPTIONAL=(fd bat tree lazygit tmux starship direnv)
 for t in "${OPTIONAL[@]}"; do
     command -v "$t" &>/dev/null && ok "$t found" || info "$t not installed (optional but recommended)"
 done

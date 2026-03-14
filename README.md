@@ -239,33 +239,33 @@ direnv reload         # reload manually
 
 ---
 
-### mise — polyglot version manager
+### Version Management Strategy
 
-Replaces nvm, pyenv, rbenv etc. with a single tool.
+Use language-specific, official version managers for clarity and control:
 
+**Python:** `uv` (modern, integrated)
 ```bash
-# Install a tool version
-mise install node@lts
-mise install python@3.12
-mise install go@latest
-
-# Set version for current project (creates .mise.toml)
-mise use node@lts
-mise use python@3.12
-
-# Set global defaults
-mise global node@lts
-mise global python@3.12
-
-# Show current active versions
-mise current
-
-# List installed versions
-mise list
-
-# Upgrade all tools
-mise upgrade
+uv venv                   # create virtual environment
+uv python pin 3.12        # pin version in project
+uv add numpy pandas       # install packages
+uv run script.py          # run script
 ```
+
+**Node.js:** `nvm` (standard, familiar)
+```bash
+nvm install lts/*(latest LTS)
+nvm use <version>         # set per-project
+nvm alias default lts/*   # set global default
+```
+
+**Rust:** `rustup` (official, reliable)
+```bash
+rustup update
+rustup toolchain install nightly
+rustup default stable     # set default channel
+```
+
+Each tool is optimized for its ecosystem. No "magic" version switching.
 
 ---
 

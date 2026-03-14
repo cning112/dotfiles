@@ -31,7 +31,3 @@ uv
 
 # Per-directory environment variables
 direnv
-
-# Polyglot version manager (node, python, go, ruby, etc.)
-# Can replace nvm once installed: run 'mise use node@lts' in projects
-mise
