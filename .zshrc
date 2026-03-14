@@ -33,3 +33,6 @@ source <(fzf --zsh)
 fpath+=~/.zfunc; autoload -Uz compinit; compinit
 
 zstyle ':completion:*' menu select
+
+# Added by Antigravity
+export PATH="/Users/cning/.antigravity/antigravity/bin:$PATH"

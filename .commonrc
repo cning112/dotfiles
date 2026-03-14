@@ -23,5 +23,12 @@ export AR_wasm32_unknown_unknown="/opt/homebrew/opt/llvm/bin/llvm-ar"
 export CFLAGS_wasm32_unknown_unknown="--target=wasm32-unknown-unknown"
 
 
+# JDK
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+export PATH="$JAVA_HOME/bin:$PATH"
+
+# coursier
+export PATH="$PATH:/Users/cning/Library/Application Support/Coursier/bin"
+
 # Deduplicate $PATH
 export PATH="$(echo "$PATH" | /usr/bin/awk 'BEGIN { RS=":"; } { sub(sprintf("%c$", 10), ""); if (A[$0]) {} else { A[$0]=1; printf(((NR==1) ?"" : ":") $0) }}')"

@@ -4,8 +4,8 @@ shopt -s histappend
 export HISTSIZE=5000
 export HISTFILESIZE=10000
 
-bind '"\e[A": history-search-backward'
-bind '"\e[B": history-search-forward'
+#bind '"\e[A": history-search-backward'
+#bind '"\e[B": history-search-forward'
 
 export CLICOLOR=1
 export LSCOLORS=GxFxCxDxBxegedabagaced
