@@ -1,34 +1,91 @@
 # --------------------------------------------------------
+# OS / Environment Detection
+# --------------------------------------------------------
+IS_MACOS=false
+IS_LINUX=false
+IS_WSL=false
+
+case "$(uname -s)" in
+  Darwin) IS_MACOS=true ;;
+  Linux)
+    IS_LINUX=true
+    grep -qi microsoft /proc/version 2>/dev/null && IS_WSL=true
+    ;;
+esac
+
+export IS_MACOS IS_LINUX IS_WSL
+
+# --------------------------------------------------------
 # Load other configuration files
 # --------------------------------------------------------
-if [ -s "$HOME/.tools" ]; then source $HOME/.tools; fi
-if [ -s "$HOME/.aliases" ]; then source $HOME/.aliases; fi
-if [ -s "$HOME/.functions" ]; then source $HOME/.functions; fi
+if [ -s "$HOME/.tools" ]; then source "$HOME/.tools"; fi
+if [ -s "$HOME/.aliases" ]; then source "$HOME/.aliases"; fi
+if [ -s "$HOME/.functions" ]; then source "$HOME/.functions"; fi
 
 
 # --------------------------------------------------------
-# More ENV
+# PATH base
 # --------------------------------------------------------
 export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
-# LLVM
-export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
-export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
+# --------------------------------------------------------
+# macOS-only toolchain
+# --------------------------------------------------------
+if $IS_MACOS; then
+    # LLVM
+    export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+    export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+    export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
 
-# WASM
-export CC_wasm32_unknown_unknown="/opt/homebrew/opt/llvm/bin/clang"
-export AR_wasm32_unknown_unknown="/opt/homebrew/opt/llvm/bin/llvm-ar"
-export CFLAGS_wasm32_unknown_unknown="--target=wasm32-unknown-unknown"
+    # WASM
+    export CC_wasm32_unknown_unknown="/opt/homebrew/opt/llvm/bin/clang"
+    export AR_wasm32_unknown_unknown="/opt/homebrew/opt/llvm/bin/llvm-ar"
+    export CFLAGS_wasm32_unknown_unknown="--target=wasm32-unknown-unknown"
 
+    # JDK
+    export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+    export PATH="$JAVA_HOME/bin:$PATH"
 
-# JDK
-export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
-export PATH="$JAVA_HOME/bin:$PATH"
+    # Coursier (Scala)
+    export PATH="$PATH:$HOME/Library/Application Support/Coursier/bin"
+fi
 
-# coursier
-export PATH="$PATH:/Users/cning/Library/Application Support/Coursier/bin"
+# --------------------------------------------------------
+# FZF
+# --------------------------------------------------------
+if command -v fzf &>/dev/null; then
+    export FZF_DEFAULT_OPTS="
+        --height=40% --layout=reverse --border=rounded
+        --bind='ctrl-/:toggle-preview'
+        --bind='ctrl-u:preview-half-page-up,ctrl-d:preview-half-page-down'
+        --preview-window=right:50%:wrap
+    "
 
+    # Use fd for faster file traversal if available
+    if command -v fd &>/dev/null; then
+        export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+        export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+        export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+    fi
+
+    # History search: show full command as preview
+    export FZF_CTRL_R_OPTS="--preview 'echo {}' --preview-window=down:3:wrap"
+
+    # File preview: use bat if available, fallback to cat
+    if command -v bat &>/dev/null; then
+        export FZF_CTRL_T_OPTS="--preview 'bat --style=numbers --color=always --line-range=:100 {}'"
+    else
+        export FZF_CTRL_T_OPTS="--preview 'cat {}'"
+    fi
+
+    # Directory preview: use tree if available
+    if command -v tree &>/dev/null; then
+        export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -50'"
+    fi
+fi
+
+# --------------------------------------------------------
 # Deduplicate $PATH
+# --------------------------------------------------------
 export PATH="$(echo "$PATH" | /usr/bin/awk 'BEGIN { RS=":"; } { sub(sprintf("%c$", 10), ""); if (A[$0]) {} else { A[$0]=1; printf(((NR==1) ?"" : ":") $0) }}')"

@@ -1,0 +1,21 @@
+# macOS-only apps (casks)
+warp
+iterm2
+raycast
+keka
+kap
+keycastr
+stats
+alt-tab
+chatgpt
+boop
+zed
+
+#slack
+#discord
+#figma
+#vlc
+#visual-studio-code
+#sublime-text
+
+#hiddenbar  # install via App Store

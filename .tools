@@ -1,8 +1,8 @@
 # NVM
 if [ -d "$HOME/.nvm" ]; then
     export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 fi
 
 # Rust & Cargo
@@ -14,7 +14,7 @@ fi
 export CONDA_PATH="$HOME/miniconda3"
 if [ -f "$CONDA_PATH/etc/profile.d/conda.sh" ]; then
     . "$CONDA_PATH/etc/profile.d/conda.sh"
-    conda config --set auto_activate_base false >/dev/null 2>&1
+    # Note: run once manually: conda config --set auto_activate_base false
 else
     export PATH="$CONDA_PATH/bin:$PATH"
 fi
@@ -24,13 +24,16 @@ if [ -d "$HOME/.lmstudio/bin" ]; then
     export PATH="$PATH:$HOME/.lmstudio/bin"
 fi
 
-# Homebrew
+# Homebrew (macOS: /opt/homebrew, Linux: /home/linuxbrew)
 if [ -d "/opt/homebrew/bin" ]; then
     export PATH="/opt/homebrew/bin:$PATH"
+elif [ -d "/home/linuxbrew/.linuxbrew/bin" ]; then
+    export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+    export HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
 fi
 
-# Initialize warpify if available
-if command -v warpify &> /dev/null; then
+# Initialize warpify if available (macOS/Warp only)
+if command -v warpify &>/dev/null; then
     if [ -n "$ZSH_VERSION" ]; then
         eval "$(warpify init zsh)"
     elif [ -n "$BASH_VERSION" ]; then
@@ -39,7 +42,7 @@ if command -v warpify &> /dev/null; then
 fi
 
 # Initialize zoxide if available
-if command -v zoxide &> /dev/null; then
+if command -v zoxide &>/dev/null; then
     if [ -n "$ZSH_VERSION" ]; then
         eval "$(zoxide init zsh)"
     elif [ -n "$BASH_VERSION" ]; then

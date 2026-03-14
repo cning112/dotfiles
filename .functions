@@ -1,4 +1,30 @@
-function mkcd()
-{
-	mkdir $1 && cd $1
+# mkcd: create directory (including parents) and cd into it
+function mkcd() {
+    mkdir -p "$1" && cd "$1"
+}
+
+# fkill: fuzzy-find and kill a process
+function fkill() {
+    local pid
+    pid=$(ps -ef | sed 1d | fzf -m --header='Select process to kill' | awk '{print $2}')
+    if [ -n "$pid" ]; then
+        echo "$pid" | xargs kill -${1:-9}
+        echo "Killed PID(s): $pid"
+    fi
+}
+
+# fenv: fuzzy search environment variables
+function fenv() {
+    env | sort | fzf --preview 'echo {}'
+}
+
+# fcd: fuzzy cd into any subdirectory (uses fd if available)
+function fcd() {
+    local dir
+    if command -v fd &>/dev/null; then
+        dir=$(fd --type d --hidden --follow --exclude .git 2>/dev/null | fzf --preview 'tree -C {} | head -30')
+    else
+        dir=$(find . -type d 2>/dev/null | fzf --preview 'ls {}')
+    fi
+    [ -n "$dir" ] && cd "$dir"
 }

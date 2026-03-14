@@ -27,27 +27,42 @@ install_app() {
   fi
 }
 
-# 主脚本逻辑
-main() {
+# Install apps from a file
+install_from_file() {
   local file_path=$1
-
-  if [ -z "$file_path" ]; then
-    echo "Usage: $0 <path_to_apps.txt>"
-    exit 1
-  fi
 
   if [ ! -f "$file_path" ]; then
     echo "File $file_path not found."
-    exit 1
+    return 1
   fi
 
   while IFS= read -r app_name; do
-    # 跳过空行和以 # 开头的行
+    # Skip blank lines and comments
     [[ -z "$app_name" || "$app_name" =~ ^# ]] && continue
     install_app "$app_name"
   done < "$file_path"
 }
 
-# 执行主脚本逻辑
+# Main
+main() {
+  local file_path=${1:-"$(dirname "$0")/brew-apps.txt"}
+
+  if [ -z "$1" ]; then
+    echo "No file specified, using default: $file_path"
+  fi
+
+  install_from_file "$file_path"
+
+  # On macOS, also install macOS-specific apps
+  if [ "$(uname)" = "Darwin" ] && [ -z "$1" ]; then
+    local macos_file="$(dirname "$0")/brew-apps-macos.txt"
+    if [ -f "$macos_file" ]; then
+      echo ""
+      echo "Installing macOS-specific apps..."
+      install_from_file "$macos_file"
+    fi
+  fi
+}
+
 main "$@"
 

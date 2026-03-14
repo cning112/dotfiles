@@ -1,12 +1,20 @@
 # --------------------------------------------------------
-# Aliases
+# General Aliases
 # --------------------------------------------------------
-alias l="ls" # List files in current directory
-alias ll="ls -alh" # List all files in current directory in long list format
-alias o="open ." # Open the current directory in Finder
+alias l="ls"
+alias ll="ls -alh"
 alias vi="nvim"
 alias awslocal="uvx --from awscli-local awslocal"
 alias h="history | fzf"
+
+# Open current directory (platform-aware)
+if $IS_MACOS; then
+    alias o="open ."
+elif $IS_WSL; then
+    alias o="wslview ."
+else
+    alias o="xdg-open ."
+fi
 
 
 # --------------------------------------------------------
@@ -20,7 +28,8 @@ alias gs='echo ""; echo "*********************************************"; echo -e
 
 
 # --------------------------------------------------------
-# MacOS
+# macOS only
 # --------------------------------------------------------
-alias icloud="cd ~/Library/Mobile\ Documents/com~apple~CloudDocs"
-
+if $IS_MACOS; then
+    alias icloud="cd ~/Library/Mobile\ Documents/com~apple~CloudDocs"
+fi

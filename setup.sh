@@ -94,7 +94,8 @@ install_software() {
         echo "Installing Miniconda..."
         mkdir -p $HOME/miniconda3
         if [ "$OS_TYPE" = "Darwin" ]; then
-            curl -o "$HOME/miniconda.sh" https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh
+            ARCH=$(uname -m)  # arm64 or x86_64
+            curl -o "$HOME/miniconda.sh" "https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-${ARCH}.sh"
         elif [ "$OS_TYPE" = "Linux" ]; then
             curl -o "$HOME/miniconda.sh" -sS https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
         fi
@@ -160,7 +161,7 @@ install_software() {
     
     echo "=================================================="
     echo "Dotfiles setup completed successfully."
-    echo "Restrat your shell (bash or zsh) to apply the settings"
+    echo "Restart your shell (bash or zsh) to apply the settings"
     echo "=================================================="
 }
 

@@ -4,8 +4,9 @@ shopt -s histappend
 export HISTSIZE=5000
 export HISTFILESIZE=10000
 
-#bind '"\e[A": history-search-backward'
-#bind '"\e[B": history-search-forward'
+# Prefix history search with typed text (up/down arrows)
+bind '"\e[A": history-search-backward'
+bind '"\e[B": history-search-forward'
 
 export CLICOLOR=1
 export LSCOLORS=GxFxCxDxBxegedabagaced
@@ -24,7 +25,7 @@ print_before_the_prompt () {
     dir=$PWD
     home=$HOME
     dir=${dir/"$HOME"/"~"}
-    printf "\n $txtred%s: $bldpur%s $txtgrn%s\n$txtrst" "$HOST_NAME" "$dir" "$(vcprompt)"
+    printf "\n $txtred%s: $bldpur%s\n$txtrst" "$HOSTNAME" "$dir"
 }
 
 PROMPT_COMMAND=print_before_the_prompt
@@ -33,9 +34,10 @@ PS1="$EMOJI >"
 
 source ~/.commonrc
 
-# Always Warpify the subshell
-printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "bash" }}\x9c'
+# Warpify the subshell (only when running inside Warp)
+if [ "$TERM_PROGRAM" = "WarpTerminal" ]; then
+    printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "bash" }}\x9c'
+fi
 
 # Set up fzf key bindings and fuzzy completion
 eval "$(fzf --bash)"
-
