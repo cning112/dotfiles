@@ -7,6 +7,17 @@ alias vi="nvim"
 alias awslocal="uvx --from awscli-local awslocal"
 alias h="history | fzf"
 
+# bat: better cat with syntax highlighting
+if command -v bat &>/dev/null; then
+    alias cat="bat --paging=never"
+    alias less="bat"
+fi
+
+# zoxide: interactive directory jump
+if command -v zoxide &>/dev/null; then
+    alias zi="z -i"   # interactive selection
+fi
+
 # Open current directory (platform-aware)
 if $IS_MACOS; then
     alias o="open ."

@@ -2,8 +2,10 @@
 	name = Chao Ning
 	email = chao.ning.uk@gmail.com
 [core]
-	editor = vim
+	editor = nvim
 	autocrlf = input
+	pager = delta
+
 [init]
 	defaultBranch = main
 
@@ -16,13 +18,37 @@ lg = lg1
 # credit to https://stackoverflow.com/a/35075021/15853959
 adog = log --all --decorate --oneline --graph
 
+# Undo last commit, keep changes staged
+undo = reset --soft HEAD~1
+
+# Show files changed in last commit
+last = diff HEAD~1 HEAD --name-only
+
+[delta]
+	navigate = true      # use n/N to move between diff sections
+	side-by-side = true
+	line-numbers = true
+	syntax-theme = Dracula
+
+[interactive]
+	diffFilter = delta --color-only
+
+[merge]
+	conflictstyle = diff3
+
+[diff]
+	colorMoved = default
+
 [filter "lfs"]
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
 	clean = git-lfs clean -- %f
+
 [credential]
-	helper = 
+	# Empty entry clears system default before setting GCM
+	helper =
 	helper = /usr/local/share/gcm-core/git-credential-manager
+
 [credential "https://dev.azure.com"]
 	useHttpPath = true

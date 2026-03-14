@@ -28,3 +28,32 @@ function fcd() {
     fi
     [ -n "$dir" ] && cd "$dir"
 }
+
+# fshow: fuzzy git log browser with diff preview
+function fshow() {
+    git log --graph --color=always \
+        --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
+    fzf --ansi --no-sort --reverse \
+        --preview 'grep -o "[a-f0-9]\{7,\}" <<< {} | head -1 | xargs git show --color=always' \
+        --bind "enter:execute(grep -o '[a-f0-9]\{7,\}' <<< {} | head -1 | xargs git show --color=always | less -R)"
+}
+
+# port: show what is listening on a given port
+function port() {
+    lsof -i :"$1"
+}
+
+# extract: universal archive extractor
+function extract() {
+    case "$1" in
+        *.tar.bz2)  tar xjf "$1"     ;;
+        *.tar.gz)   tar xzf "$1"     ;;
+        *.tar.xz)   tar xJf "$1"     ;;
+        *.tar)      tar xf  "$1"     ;;
+        *.zip)      unzip   "$1"     ;;
+        *.gz)       gunzip  "$1"     ;;
+        *.bz2)      bunzip2 "$1"     ;;
+        *.7z)       7z x    "$1"     ;;
+        *)          echo "Don't know how to extract '$1'" ;;
+    esac
+}
