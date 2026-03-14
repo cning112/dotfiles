@@ -1,19 +1,38 @@
 # Cross-platform CLI tools (macOS + Linux/WSL2)
-nvim
+
+# Shell & navigation
 fzf
 fd
+zoxide
 bat
 tree
+ripgrep
+
+# Editor
+nvim
+
+# Git
 git-delta
+lazygit
+
+# Dev tools
 ffmpeg
 imagemagick
 wget
-telnet
 tldr
-ruff
-uv
 git-credential-manager
 kubectl
 llvm
 minikube
 helm
+ruff
+uv
+
+# Optional: per-directory env variables (.env auto-loading)
+#direnv
+
+# Optional: polyglot version manager (replaces nvm + pyenv + rustup)
+#mise
+
+# Optional: cross-platform shell prompt (replaces oh-my-zsh + custom bash prompt)
+#starship

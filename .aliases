@@ -13,10 +13,8 @@ if command -v bat &>/dev/null; then
     alias less="bat"
 fi
 
-# zoxide: interactive directory jump
-if command -v zoxide &>/dev/null; then
-    alias zi="z -i"   # interactive selection
-fi
+# zoxide provides 'z' and 'zi' natively after init in .tools
+# Optionally replace 'cd' entirely: change zoxide init to --cmd cd in .tools
 
 # Open current directory (platform-aware)
 if $IS_MACOS; then

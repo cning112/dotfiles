@@ -1,0 +1,18 @@
+# bat configuration
+# https://github.com/sharkdp/bat
+
+# Color theme (Dracula is widely available; run 'bat --list-themes' to see options)
+--theme="Dracula"
+
+# Show line numbers, git changes, and file header
+--style="numbers,changes,header"
+
+# 4-space tabs
+--tabs=4
+
+# Always use italic text where supported
+--italic-text=always
+
+# Don't page short output (let shell handle it)
+# Uncomment if you want paging always on:
+# --paging=always

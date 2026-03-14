@@ -100,10 +100,10 @@ install_software() {
 
     echo "Creating necessary directories..."
     mkdir -p "$HOME/.config/nvim"
+    mkdir -p "$HOME/.config/bat"
 
     echo "Creating symbolic links..."
     ln -sf "$SCRIPT_DIR/.vimrc" "$HOME/.vimrc"
-    mkdir -p "$HOME/.config/nvim"
     ln -sf "$SCRIPT_DIR/.vimrc" "$HOME/.config/nvim/init.vim"
     ln -sf "$SCRIPT_DIR/.zshrc" "$HOME/.zshrc"
     ln -sf "$SCRIPT_DIR/.gitconfig" "$HOME/.gitconfig"
@@ -118,6 +118,8 @@ install_software() {
     ln -sf "$SCRIPT_DIR/.aliases" "$HOME/.aliases"
     ln -sf "$SCRIPT_DIR/.functions" "$HOME/.functions"
     ln -sf "$SCRIPT_DIR/.tools" "$HOME/.tools"
+    ln -sf "$SCRIPT_DIR/.ripgreprc" "$HOME/.ripgreprc"
+    ln -sf "$SCRIPT_DIR/bat/config" "$HOME/.config/bat/config"
 
     echo "Installing Vim and Neovim plugins..."
     vim +PlugInstall +qall

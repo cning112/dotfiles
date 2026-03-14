@@ -1,0 +1,26 @@
+# ripgrep configuration
+# https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md#configuration-file
+
+# Case-insensitive search unless pattern has uppercase
+--smart-case
+
+# Search hidden files/dirs (but still respect .gitignore)
+--hidden
+
+# Follow symlinks
+--follow
+
+# Truncate long lines in output (avoids terminal noise)
+--max-columns=150
+--max-columns-preview
+
+# Global ignores (in addition to .gitignore)
+--glob=!.git
+--glob=!node_modules
+--glob=!target
+--glob=!dist
+--glob=!build
+--glob=!.next
+--glob=!*.lock
+--glob=!*.min.js
+--glob=!*.min.css

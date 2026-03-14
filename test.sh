@@ -36,6 +36,7 @@ SYMLINKS=(
     .commonrc .aliases .functions .tools
     .gitconfig .gitignore
     .vimrc .ideavimrc .editorconfig .tmux.conf
+    .ripgreprc
 )
 
 for f in "${SYMLINKS[@]}"; do
@@ -56,12 +57,19 @@ for t in "${TOOLS[@]}"; do
 done
 
 # --------------------------------------------------------
-section "Recommended CLI tools (fzf enhancements)"
+section "Recommended CLI tools"
 # --------------------------------------------------------
-OPTIONAL=(fd bat tree git-delta)
+OPTIONAL=(fd bat tree git-delta ripgrep lazygit tmux)
 for t in "${OPTIONAL[@]}"; do
     command -v "$t" &>/dev/null && ok "$t found" || info "$t not installed (optional but recommended)"
 done
+
+# bat config symlink
+if [ -L "$HOME/.config/bat/config" ]; then
+    ok "~/.config/bat/config symlinked"
+else
+    info "~/.config/bat/config not symlinked (run setup.sh)"
+fi
 
 # --------------------------------------------------------
 section "Shell config syntax check"
@@ -109,6 +117,20 @@ if command -v delta &>/dev/null; then
     [ "$pager" = "delta" ] && ok "git core.pager = delta" || info "git core.pager not set to delta"
 else
     info "git-delta not installed, skipping delta check"
+fi
+
+# --------------------------------------------------------
+section "tmux"
+# --------------------------------------------------------
+if command -v tmux &>/dev/null; then
+    ok "tmux installed: $(tmux -V)"
+    [ -L "$HOME/.tmux.conf" ] && ok "~/.tmux.conf symlinked" || fail "~/.tmux.conf not symlinked"
+    tmux -f "$HOME/.tmux.conf" new-session -d -s test_session 2>/dev/null \
+        && tmux kill-session -t test_session 2>/dev/null \
+        && ok ".tmux.conf loads without errors" \
+        || fail ".tmux.conf has errors (check: tmux source ~/.tmux.conf)"
+else
+    info "tmux not installed"
 fi
 
 # --------------------------------------------------------

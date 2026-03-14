@@ -58,8 +58,11 @@ if command -v fzf &>/dev/null; then
     export FZF_DEFAULT_OPTS="
         --height=40% --layout=reverse --border=rounded
         --bind='ctrl-/:toggle-preview'
-        --bind='ctrl-u:preview-half-page-up,ctrl-d:preview-half-page-down'
+        --bind='shift-up:preview-half-page-up,shift-down:preview-half-page-down'
         --preview-window=right:50%:wrap
+        --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
+        --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
+        --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
     "
 
     # Use fd for faster file traversal if available
@@ -68,9 +71,6 @@ if command -v fzf &>/dev/null; then
         export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
         export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
     fi
-
-    # History search: show full command as preview
-    export FZF_CTRL_R_OPTS="--preview 'echo {}' --preview-window=down:3:wrap"
 
     # File preview: use bat if available, fallback to cat
     if command -v bat &>/dev/null; then
@@ -83,7 +83,15 @@ if command -v fzf &>/dev/null; then
     if command -v tree &>/dev/null; then
         export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -50'"
     fi
+
+    # History search: no preview needed, command is visible in list
+    export FZF_CTRL_R_OPTS="--no-preview"
 fi
+
+# --------------------------------------------------------
+# Ripgrep
+# --------------------------------------------------------
+export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
 
 # --------------------------------------------------------
 # Deduplicate $PATH
