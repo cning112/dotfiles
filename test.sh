@@ -59,10 +59,23 @@ done
 # --------------------------------------------------------
 section "Recommended CLI tools"
 # --------------------------------------------------------
-OPTIONAL=(fd bat tree git-delta ripgrep lazygit tmux starship direnv mise)
+OPTIONAL=(fd bat tree lazygit tmux starship direnv mise)
 for t in "${OPTIONAL[@]}"; do
     command -v "$t" &>/dev/null && ok "$t found" || info "$t not installed (optional but recommended)"
 done
+
+# git-delta and ripgrep: Homebrew installs them as 'delta' and 'rg', but we alias them
+if command -v delta &>/dev/null; then
+    ok "git-delta (delta) found"
+else
+    info "git-delta not installed (optional but recommended)"
+fi
+
+if command -v rg &>/dev/null; then
+    ok "ripgrep (rg) found"
+else
+    info "ripgrep not installed (optional but recommended)"
+fi
 
 # Config symlinks
 if [ -L "$HOME/.config/bat/config" ]; then

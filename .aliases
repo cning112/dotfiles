@@ -40,6 +40,15 @@ if command -v lazygit &>/dev/null; then
     alias lg='lazygit'
 fi
 
+# Homebrew formula name aliases (binaries have shorter names)
+if command -v delta &>/dev/null; then
+    alias git-delta='delta'
+fi
+
+if command -v rg &>/dev/null; then
+    alias ripgrep='rg'
+fi
+
 
 # --------------------------------------------------------
 # macOS only
