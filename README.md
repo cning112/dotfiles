@@ -82,15 +82,7 @@ dotfiles/
 
 ### fzf — fuzzy finder
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+T` | Fuzzy find files, paste into command line |
-| `Ctrl+R` | Fuzzy search command history |
-| `Alt+C`  | Fuzzy cd into a subdirectory |
-| `Ctrl+/` | Toggle preview panel |
-| `Shift+↑/↓` | Scroll preview panel |
-
-Custom functions (defined in `.functions`):
+Use fzf via explicit function calls (more reliable than keybindings):
 
 | Command | Action |
 |---------|--------|
@@ -98,6 +90,8 @@ Custom functions (defined in `.functions`):
 | `fkill` | Fuzzy select and kill a process |
 | `fenv` | Fuzzy search environment variables |
 | `fshow` | Fuzzy browse git log with diff preview |
+
+Fzf is configured for fast file searching (uses `fd`, previews with `bat` if available) and can be piped to manually.
 
 ---
 

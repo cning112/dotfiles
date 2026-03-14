@@ -11,9 +11,6 @@ if [ "$TERM_PROGRAM" = "WarpTerminal" ]; then
     printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "zsh" }}\x9c'
 fi
 
-# fzf key bindings and fuzzy completion
-source <(fzf --zsh)
-
 # zsh completion
 fpath+=~/.zfunc; autoload -Uz compinit; compinit
 zstyle ':completion:*' menu select

@@ -19,8 +19,5 @@ if [ "$TERM_PROGRAM" = "WarpTerminal" ]; then
     printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "bash" }}\x9c'
 fi
 
-# fzf key bindings and fuzzy completion
-eval "$(fzf --bash)"
-
 # Starship prompt (must be last)
 eval "$(starship init bash)"
