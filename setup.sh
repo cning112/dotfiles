@@ -101,6 +101,7 @@ install_software() {
     echo "Creating necessary directories..."
     mkdir -p "$HOME/.config/nvim"
     mkdir -p "$HOME/.config/bat"
+    mkdir -p "$HOME/.config"
 
     echo "Creating symbolic links..."
     ln -sf "$SCRIPT_DIR/.vimrc" "$HOME/.vimrc"
@@ -120,6 +121,7 @@ install_software() {
     ln -sf "$SCRIPT_DIR/.tools" "$HOME/.tools"
     ln -sf "$SCRIPT_DIR/.ripgreprc" "$HOME/.ripgreprc"
     ln -sf "$SCRIPT_DIR/bat/config" "$HOME/.config/bat/config"
+    ln -sf "$SCRIPT_DIR/starship.toml" "$HOME/.config/starship.toml"
 
     echo "Installing Vim and Neovim plugins..."
     vim +PlugInstall +qall

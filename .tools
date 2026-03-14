@@ -32,6 +32,25 @@ elif [ -d "/home/linuxbrew/.linuxbrew/bin" ]; then
     export HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
 fi
 
+# mise: polyglot version manager (node, python, go, etc.)
+# Replaces nvm/pyenv when installed. Run 'mise install' in a project dir.
+if command -v mise &>/dev/null; then
+    if [ -n "$ZSH_VERSION" ]; then
+        eval "$(mise activate zsh)"
+    elif [ -n "$BASH_VERSION" ]; then
+        eval "$(mise activate bash)"
+    fi
+fi
+
+# direnv: per-directory environment variables (.envrc files)
+if command -v direnv &>/dev/null; then
+    if [ -n "$ZSH_VERSION" ]; then
+        eval "$(direnv hook zsh)"
+    elif [ -n "$BASH_VERSION" ]; then
+        eval "$(direnv hook bash)"
+    fi
+fi
+
 # Initialize warpify if available (macOS/Warp only)
 if command -v warpify &>/dev/null; then
     if [ -n "$ZSH_VERSION" ]; then

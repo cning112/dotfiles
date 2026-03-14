@@ -7,6 +7,7 @@ zoxide
 bat
 tree
 ripgrep
+starship
 
 # Editor
 nvim
@@ -28,11 +29,9 @@ helm
 ruff
 uv
 
-# Optional: per-directory env variables (.env auto-loading)
-#direnv
+# Per-directory environment variables
+direnv
 
-# Optional: polyglot version manager (replaces nvm + pyenv + rustup)
-#mise
-
-# Optional: cross-platform shell prompt (replaces oh-my-zsh + custom bash prompt)
-#starship
+# Polyglot version manager (node, python, go, ruby, etc.)
+# Can replace nvm once installed: run 'mise use node@lts' in projects
+mise

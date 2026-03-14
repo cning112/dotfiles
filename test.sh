@@ -59,16 +59,22 @@ done
 # --------------------------------------------------------
 section "Recommended CLI tools"
 # --------------------------------------------------------
-OPTIONAL=(fd bat tree git-delta ripgrep lazygit tmux)
+OPTIONAL=(fd bat tree git-delta ripgrep lazygit tmux starship direnv mise)
 for t in "${OPTIONAL[@]}"; do
     command -v "$t" &>/dev/null && ok "$t found" || info "$t not installed (optional but recommended)"
 done
 
-# bat config symlink
+# Config symlinks
 if [ -L "$HOME/.config/bat/config" ]; then
     ok "~/.config/bat/config symlinked"
 else
     info "~/.config/bat/config not symlinked (run setup.sh)"
+fi
+
+if [ -L "$HOME/.config/starship.toml" ]; then
+    ok "~/.config/starship.toml symlinked"
+else
+    info "~/.config/starship.toml not symlinked (run setup.sh)"
 fi
 
 # --------------------------------------------------------
