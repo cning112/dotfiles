@@ -20,6 +20,9 @@ setup_shells() {
 
 # 安装必要的软件
 install_software() {
+    echo "Installing brew apps from brew-apps.txt..."
+    bash "${SCRIPT_DIR}/install_brew_apps.sh"
+
     echo "Installing vim-plug for Vim..."
     curl -fLo "$HOME/.vim/autoload/plug.vim" --create-dirs \
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -27,38 +30,6 @@ install_software() {
     echo "Installing vim-plug for Neovim..."
     curl -fLo "$HOME/.local/share/nvim/site/autoload/plug.vim" --create-dirs \
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-
-    # 安装 Vim
-    if brew list --versions vim &> /dev/null 2>&1; then
-        echo "Vim is already installed"
-        INSTALLED_VIM_VERSION=$(brew list --versions vim | awk '{print $2}')
-        LATEST_VIM_VERSION=$(brew info vim --json=v1 | jq -r '.[0].versions.stable')
-        if [ "$INSTALLED_VIM_VERSION" != "$LATEST_VIM_VERSION" ]; then
-            echo "Updating Vim to the latest version..."
-            brew upgrade vim
-        else
-            echo "Vim is already the latest version ($INSTALLED_VIM_VERSION)"
-        fi
-    else
-        echo "Installing the latest version of Vim..."
-        brew install vim
-    fi
-
-    # 安装 Neovim
-    if brew list --versions neovim &> /dev/null 2>&1; then
-        echo "Neovim is already installed"
-        INSTALLED_NVIM_VERSION=$(brew list --versions neovim | awk '{print $2}')
-        LATEST_NVIM_VERSION=$(brew info neovim --json=v1 | jq -r '.[0].versions.stable')
-        if [ "$INSTALLED_NVIM_VERSION" != "$LATEST_NVIM_VERSION" ]; then
-            echo "Updating Neovim to the latest version..."
-            brew upgrade neovim
-        else
-            echo "Neovim is already the latest version ($INSTALLED_NVIM_VERSION)"
-        fi
-    else
-        echo "Installing the latest version of Neovim..."
-        brew install neovim
-    fi
 
     if [ -n "$ZSH_VERSION" ]; then
         if [ ! -d "$HOME/.oh-my-zsh" ]; then
@@ -186,4 +157,4 @@ else
     exit 1
 fi
 
-echo "Install other apps using brew: ./install_brew_apps.sh apps.txt"
+echo "Done. Run './test.sh' to verify the setup."
