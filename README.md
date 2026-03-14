@@ -2,6 +2,23 @@
 
 Shell configuration for macOS and WSL2 (Ubuntu). Managed via symlinks so changes in this repo take effect immediately.
 
+## What's included
+
+**Shell & Prompt**
+- Zsh and Bash configuration with [Starship](https://starship.rs/) cross-platform prompt
+- Git integration, command aliases, shell functions
+
+**Development Tools**
+- **Package managers**: Homebrew (system), uv (Python), npm/nvm (Node.js)
+- **Version managers**: rustup (Rust), nvm (Node.js), Miniconda (Python)
+- **Productivity**: fzf (fuzzy finder), zoxide (smart cd), tmux (terminal multiplexer), lazygit (git UI)
+- **CLI enhancement**: bat (syntax highlight), ripgrep (fast search), git-delta (better diffs)
+- **Configuration**: direnv (per-directory env vars), Starship (prompt), Tmux (sessions)
+
+**Cross-platform**
+- Unified setup for macOS and WSL2 with platform detection
+- Consistent experience: same tools, configs, and aliases on both
+
 ## Installation
 
 ### macOS
@@ -63,7 +80,7 @@ dotfiles/
 ├── .bash_profile      # Bash login shell
 ├── .aliases           # Command aliases
 ├── .functions         # Shell functions
-├── .tools             # Tool initialisation (nvm, rust, conda, zoxide, direnv, mise…)
+├── .tools             # Tool initialisation (nvm, rust, conda, zoxide, direnv)
 ├── .gitconfig         # Git config with delta pager
 ├── .ripgreprc         # Ripgrep defaults
 ├── .tmux.conf         # Tmux config
