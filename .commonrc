@@ -44,8 +44,10 @@ if $IS_MACOS; then
     export CFLAGS_wasm32_unknown_unknown="--target=wasm32-unknown-unknown"
 
     # JDK
-    export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
-    export PATH="$JAVA_HOME/bin:$PATH"
+    if [ -d /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ]; then
+        export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+        export PATH="$JAVA_HOME/bin:$PATH"
+    fi
 
     # Coursier (Scala)
     export PATH="$PATH:$HOME/Library/Application Support/Coursier/bin"

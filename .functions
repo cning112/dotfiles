@@ -20,9 +20,14 @@ function fenv() {
 
 # fcd: fuzzy cd into any subdirectory (uses fd if available)
 function fcd() {
-    local dir
+    local dir preview_cmd
+    if command -v tree &>/dev/null; then
+        preview_cmd='tree -C {} | head -30'
+    else
+        preview_cmd='ls {}'
+    fi
     if command -v fd &>/dev/null; then
-        dir=$(fd --type d --hidden --follow --exclude .git 2>/dev/null | fzf --preview 'tree -C {} | head -30')
+        dir=$(fd --type d --hidden --follow --exclude .git 2>/dev/null | fzf --preview "$preview_cmd")
     else
         dir=$(find . -type d 2>/dev/null | fzf --preview 'ls {}')
     fi

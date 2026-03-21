@@ -21,4 +21,4 @@ if [ -d "$HOME/.antigravity/antigravity/bin" ]; then
 fi
 
 # Starship prompt (must be last)
-eval "$(starship init zsh)"
+command -v starship &>/dev/null && eval "$(starship init zsh)"

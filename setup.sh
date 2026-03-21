@@ -31,13 +31,6 @@ install_software() {
     curl -fLo "$HOME/.local/share/nvim/site/autoload/plug.vim" --create-dirs \
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
-    if [ -n "$ZSH_VERSION" ]; then
-        if [ ! -d "$HOME/.oh-my-zsh" ]; then
-            echo "Installing oh-my-zsh..."
-            sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-        fi
-    fi
-
     if ! command -v zoxide &> /dev/null 2>&1; then
         echo "Installing zoxide..."
         curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
@@ -47,11 +40,7 @@ install_software() {
         echo "Installing NVM..."
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh -o install.sh
         chmod +x install.sh
-        if [ -n "$ZSH_VERSION" ]; then
-            zsh install.sh
-        elif [ -n "$BASH_VERSION" ]; then
-            bash install.sh
-        fi
+        bash install.sh
         rm install.sh
     fi
 
@@ -130,13 +119,6 @@ install_software() {
     vim +PlugInstall +qall
     nvim +PlugInstall +qall
 
-    echo "Sourcing shell configuration..."
-    if [ -n "$ZSH_VERSION" ]; then
-        source "$HOME/.zshrc"
-    elif [ -n "$BASH_VERSION" ]; then
-        source "$HOME/.bash_profile"
-    fi
-    
     echo "=================================================="
     echo "Dotfiles setup completed successfully."
     echo "Restart your shell (bash or zsh) to apply the settings"

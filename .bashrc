@@ -20,4 +20,4 @@ if [ "$TERM_PROGRAM" = "WarpTerminal" ]; then
 fi
 
 # Starship prompt (must be last)
-eval "$(starship init bash)"
+command -v starship &>/dev/null && eval "$(starship init bash)"

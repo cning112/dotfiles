@@ -24,6 +24,7 @@ tldr
 git-credential-manager
 kubectl
 llvm
+openjdk@21
 minikube
 helm
 ruff
