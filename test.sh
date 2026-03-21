@@ -90,6 +90,12 @@ else
     info "~/.config/starship.toml not symlinked (run setup.sh)"
 fi
 
+if [ -L "$HOME/.config/ghostty/config" ]; then
+    ok "~/.config/ghostty/config symlinked"
+else
+    info "~/.config/ghostty/config not symlinked (run setup.sh)"
+fi
+
 # --------------------------------------------------------
 section "Shell config syntax check"
 # --------------------------------------------------------

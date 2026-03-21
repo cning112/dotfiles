@@ -1,0 +1,36 @@
+# Ghostty configuration
+# ~/.config/ghostty/config (symlinked from ~/dev/dotfiles/ghostty/config)
+
+# --------------------------------------------------------
+# Font
+# --------------------------------------------------------
+font-family = "JetBrains Mono"
+font-size = 14
+
+# --------------------------------------------------------
+# Theme
+# --------------------------------------------------------
+theme = catppuccin-mocha
+
+# --------------------------------------------------------
+# Window (macOS)
+# --------------------------------------------------------
+macos-option-as-alt = true
+background-opacity = 0.95
+
+# --------------------------------------------------------
+# Shell integration
+# --------------------------------------------------------
+# Auto-detects zsh/bash; enables prompt marking, jump-between-prompts, etc.
+shell-integration = detect
+
+# --------------------------------------------------------
+# Scrollback
+# --------------------------------------------------------
+scrollback-limit = 10000
+
+# --------------------------------------------------------
+# Keybindings
+# --------------------------------------------------------
+# Unbind ctrl+a so tmux (prefix key) receives it unmodified
+keybind = ctrl+a=unbind
