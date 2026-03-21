@@ -11,9 +11,9 @@ Shell configuration for macOS and WSL2 (Ubuntu). Managed via symlinks so changes
 **Development Tools**
 - **Package managers**: Homebrew (system), uv (Python), npm/nvm (Node.js)
 - **Version managers**: rustup (Rust), nvm (Node.js), Miniconda (Python)
-- **Productivity**: fzf (fuzzy finder), zoxide (smart cd), tmux (terminal multiplexer), lazygit (git UI)
+- **Productivity**: fzf (fuzzy finder), zoxide (smart cd), zellij (terminal multiplexer), lazygit (git UI)
 - **CLI enhancement**: bat (syntax highlight), ripgrep (fast search), git-delta (better diffs)
-- **Configuration**: direnv (per-directory env vars), Starship (prompt), Tmux (sessions)
+- **Configuration**: direnv (per-directory env vars), Starship (prompt), Zellij (sessions)
 
 **Cross-platform**
 - Unified setup for macOS and WSL2 with platform detection
@@ -83,7 +83,7 @@ dotfiles/
 ├── .tools             # Tool initialisation (nvm, rust, conda, zoxide, direnv)
 ├── .gitconfig         # Git config with delta pager
 ├── .ripgreprc         # Ripgrep defaults
-├── .tmux.conf         # Tmux config
+├── zellij/config.kdl  # Zellij config
 ├── starship.toml      # Starship prompt config
 ├── bat/config         # Bat config
 ├── brew-apps.txt      # Cross-platform CLI tools
@@ -123,33 +123,23 @@ z -            # go back to previous directory
 
 ---
 
-### tmux — terminal multiplexer
+### zellij — terminal multiplexer
 
-**Prefix key: `Ctrl+a`**
+Zellij uses a built-in UI — no prefix key needed. The default keybindings are shown in the status bar at the bottom.
 
 | Shortcut | Action |
 |----------|--------|
-| `prefix + \|` | Split pane vertically |
-| `prefix + -` | Split pane horizontally |
-| `prefix + h/j/k/l` | Navigate panes (vim-style) |
-| `prefix + H/J/K/L` | Resize panes |
-| `prefix + c` | New window (in current directory) |
-| `prefix + < / >` | Swap window left/right |
-| `prefix + r` | Reload tmux config |
-| `prefix + [` | Enter copy mode |
-| `prefix + z` | Zoom/unzoom current pane |
-| `prefix + $` | Rename session |
+| `Ctrl+p` then `n` | New pane |
+| `Ctrl+p` then `d` | Down split |
+| `Ctrl+p` then `r` | Right split |
+| `Ctrl+p` then `x` | Close pane |
+| `Ctrl+t` then `n` | New tab |
+| `Ctrl+t` then `x` | Close tab |
+| `Alt+←/→/↑/↓` | Move focus between panes |
+| `Ctrl+s` then `s` | Enter scroll mode |
+| `Ctrl+q` | Quit zellij |
 
-**Copy mode (vi):**
-
-| Key | Action |
-|-----|--------|
-| `v` | Begin selection |
-| `Ctrl+v` | Rectangle selection |
-| `y` | Copy selection (to system clipboard) |
-| `H / L` | Jump to start / end of line |
-
-Mouse is enabled: click to focus, drag border to resize, scroll to scroll.
+Mouse is enabled: click to focus, scroll to scroll.
 
 ---
 

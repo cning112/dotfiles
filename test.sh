@@ -35,7 +35,7 @@ SYMLINKS=(
     .zshrc .bashrc .bash_profile
     .commonrc .aliases .functions .tools
     .gitconfig .gitignore
-    .vimrc .ideavimrc .editorconfig .tmux.conf
+    .vimrc .ideavimrc .editorconfig
     .ripgreprc
 )
 
@@ -59,7 +59,7 @@ done
 # --------------------------------------------------------
 section "Recommended CLI tools"
 # --------------------------------------------------------
-OPTIONAL=(fd bat tree lazygit tmux starship direnv)
+OPTIONAL=(fd bat tree lazygit zellij starship direnv)
 for t in "${OPTIONAL[@]}"; do
     command -v "$t" &>/dev/null && ok "$t found" || info "$t not installed (optional but recommended)"
 done
@@ -94,6 +94,12 @@ if [ -L "$HOME/.config/ghostty/config" ]; then
     ok "~/.config/ghostty/config symlinked"
 else
     info "~/.config/ghostty/config not symlinked (run setup.sh)"
+fi
+
+if [ -L "$HOME/.config/zellij/config.kdl" ]; then
+    ok "~/.config/zellij/config.kdl symlinked"
+else
+    info "~/.config/zellij/config.kdl not symlinked (run setup.sh)"
 fi
 
 # --------------------------------------------------------
@@ -145,17 +151,13 @@ else
 fi
 
 # --------------------------------------------------------
-section "tmux"
+section "zellij"
 # --------------------------------------------------------
-if command -v tmux &>/dev/null; then
-    ok "tmux installed: $(tmux -V)"
-    [ -L "$HOME/.tmux.conf" ] && ok "~/.tmux.conf symlinked" || fail "~/.tmux.conf not symlinked"
-    tmux -f "$HOME/.tmux.conf" new-session -d -s test_session 2>/dev/null \
-        && tmux kill-session -t test_session 2>/dev/null \
-        && ok ".tmux.conf loads without errors" \
-        || fail ".tmux.conf has errors (check: tmux source ~/.tmux.conf)"
+if command -v zellij &>/dev/null; then
+    ok "zellij installed: $(zellij --version)"
+    [ -L "$HOME/.config/zellij/config.kdl" ] && ok "~/.config/zellij/config.kdl symlinked" || fail "~/.config/zellij/config.kdl not symlinked"
 else
-    info "tmux not installed"
+    info "zellij not installed"
 fi
 
 # --------------------------------------------------------

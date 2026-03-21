@@ -31,3 +31,6 @@ uv
 
 # Per-directory environment variables
 direnv
+
+# Terminal multiplexer
+zellij

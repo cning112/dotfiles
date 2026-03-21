@@ -20,7 +20,7 @@ Shell and tool configuration for macOS and WSL2 (Ubuntu). All dotfiles are manag
 ./install_brew_apps.sh brew-apps-macos.txt  # macOS-only cask apps
 ```
 
-`test.sh` checks symlinks, required CLI tools, shell config syntax, fzf/zoxide/git/tmux config, and WSL2-specific tools. Run it after any change to verify nothing is broken.
+`test.sh` checks symlinks, required CLI tools, shell config syntax, fzf/zoxide/git/zellij config, and WSL2-specific tools. Run it after any change to verify nothing is broken.
 
 ## Architecture
 
@@ -30,7 +30,7 @@ Shell and tool configuration for macOS and WSL2 (Ubuntu). All dotfiles are manag
 3. `.aliases` — command aliases, bat/cat override, git shortcuts, platform-aware `o` alias
 4. `.functions` — shell functions: `mkcd`, `fcd`, `fkill`, `fenv`, `fshow`, `port`, `extract`
 
-**Symlink targets**: `setup.sh` creates symlinks for `.zshrc`, `.bashrc`, `.bash_profile`, `.commonrc`, `.aliases`, `.functions`, `.tools`, `.gitconfig`, `.gitignore`, `.vimrc`, `.ideavimrc`, `.tmux.conf`, `.editorconfig`, `.ripgreprc`, `bat/config`, `starship.toml`.
+**Symlink targets**: `setup.sh` creates symlinks for `.zshrc`, `.bashrc`, `.bash_profile`, `.commonrc`, `.aliases`, `.functions`, `.tools`, `.gitconfig`, `.gitignore`, `.vimrc`, `.ideavimrc`, `.editorconfig`, `.ripgreprc`, `bat/config`, `starship.toml`, `zellij/config.kdl`.
 
 **`lazyvim/`** — LazyVim Neovim config (separate from the vim-plug `.vimrc`). Not symlinked by `setup.sh`; intended to be copied/linked to `~/.config/nvim/` manually.
 

@@ -102,6 +102,7 @@ install_software() {
     mkdir -p "$HOME/.config/nvim"
     mkdir -p "$HOME/.config/bat"
     mkdir -p "$HOME/.config/ghostty"
+    mkdir -p "$HOME/.config/zellij"
     mkdir -p "$HOME/.config"
 
     echo "Creating symbolic links..."
@@ -114,7 +115,7 @@ install_software() {
     ln -sf "$SCRIPT_DIR/.bashrc" "$HOME/.bashrc"
     ln -sf "$SCRIPT_DIR/.commonrc" "$HOME/.commonrc"
     ln -sf "$SCRIPT_DIR/.common_vimrc" "$HOME/.common_vimrc"
-    ln -sf "$SCRIPT_DIR/.tmux.conf" "$HOME/.tmux.conf"
+    ln -sf "$SCRIPT_DIR/zellij/config.kdl" "$HOME/.config/zellij/config.kdl"
     ln -sf "$SCRIPT_DIR/.editorconfig" "$HOME/.editorconfig"
     ln -sf "$SCRIPT_DIR/.ideavimrc" "$HOME/.ideavimrc"
     ln -sf "$SCRIPT_DIR/.aliases" "$HOME/.aliases"

@@ -1,0 +1,8 @@
+// Zellij configuration
+// ~/.config/zellij/config.kdl (symlinked from ~/dev/dotfiles/zellij/config.kdl)
+
+theme "catppuccin-mocha"
+
+scroll_buffer_size 10000
+
+mouse_mode true

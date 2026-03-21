@@ -29,8 +29,3 @@ shell-integration = detect
 # --------------------------------------------------------
 scrollback-limit = 10000
 
-# --------------------------------------------------------
-# Keybindings
-# --------------------------------------------------------
-# Unbind ctrl+a so tmux (prefix key) receives it unmodified
-keybind = ctrl+a=unbind
