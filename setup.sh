@@ -88,15 +88,22 @@ install_software() {
     fi
 
     echo "Creating necessary directories..."
-    mkdir -p "$HOME/.config/nvim"
     mkdir -p "$HOME/.config/bat"
     mkdir -p "$HOME/.config/ghostty"
     mkdir -p "$HOME/.config/zellij"
     mkdir -p "$HOME/.config"
 
+    # Neovim uses the LazyVim config in this repo. Back up any existing config
+    # directory so we do not leave both init.lua and init.vim in place.
+    if [ -e "$HOME/.config/nvim" ] && [ ! -L "$HOME/.config/nvim" ]; then
+        backup_path="$HOME/.config/nvim.backup.$(date +%Y%m%d%H%M%S)"
+        echo "Backing up existing Neovim config to $backup_path"
+        mv "$HOME/.config/nvim" "$backup_path"
+    fi
+
     echo "Creating symbolic links..."
     ln -sf "$SCRIPT_DIR/.vimrc" "$HOME/.vimrc"
-    ln -sf "$SCRIPT_DIR/.vimrc" "$HOME/.config/nvim/init.vim"
+    ln -sfn "$SCRIPT_DIR/lazyvim" "$HOME/.config/nvim"
     ln -sf "$SCRIPT_DIR/.zshrc" "$HOME/.zshrc"
     ln -sf "$SCRIPT_DIR/.gitconfig" "$HOME/.gitconfig"
     ln -sf "$SCRIPT_DIR/.gitignore" "$HOME/.gitignore"
@@ -117,7 +124,7 @@ install_software() {
 
     echo "Installing Vim and Neovim plugins..."
     vim +PlugInstall +qall
-    nvim +PlugInstall +qall
+    nvim --headless "+Lazy! sync" +qa
 
     echo "=================================================="
     echo "Dotfiles setup completed successfully."

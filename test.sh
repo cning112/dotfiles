@@ -84,6 +84,18 @@ else
     info "~/.config/bat/config not symlinked (run setup.sh)"
 fi
 
+if [ -L "$HOME/.config/nvim" ]; then
+    ok "~/.config/nvim symlinked"
+else
+    fail "~/.config/nvim is not symlinked (run setup.sh)"
+fi
+
+if [ -f "$HOME/.config/nvim/init.lua" ]; then
+    ok "~/.config/nvim/init.lua found"
+else
+    fail "~/.config/nvim/init.lua missing — LazyVim config may not be linked"
+fi
+
 if [ -L "$HOME/.config/starship.toml" ]; then
     ok "~/.config/starship.toml symlinked"
 else

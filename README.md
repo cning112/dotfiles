@@ -14,6 +14,7 @@ Shell configuration for macOS and WSL2 (Ubuntu). Managed via symlinks so changes
 - **Productivity**: fzf (fuzzy finder), zoxide (smart cd), zellij (terminal multiplexer), lazygit (git UI)
 - **CLI enhancement**: bat (syntax highlight), ripgrep (fast search), git-delta (better diffs)
 - **Configuration**: direnv (per-directory env vars), Starship (prompt), Zellij (sessions)
+- **Editors**: Vim for portable `.vimrc` settings, LazyVim for Neovim
 
 **Cross-platform**
 - Unified setup for macOS and WSL2 with platform detection
@@ -82,7 +83,11 @@ dotfiles/
 ├── .functions         # Shell functions
 ├── .tools             # Tool initialisation (nvm, rust, conda, zoxide, direnv)
 ├── .gitconfig         # Git config with delta pager
+├── .vimrc             # Portable Vim config shared with Vim/IdeaVim-style editors
+├── .common_vimrc      # Shared Vim options sourced by .vimrc and .ideavimrc
+├── .ideavimrc         # IDE Vim-mode config
 ├── .ripgreprc         # Ripgrep defaults
+├── lazyvim/           # Neovim (LazyVim) config, symlinked to ~/.config/nvim
 ├── zellij/config.kdl  # Zellij config
 ├── starship.toml      # Starship prompt config
 ├── bat/config         # Bat config
@@ -140,6 +145,18 @@ Zellij uses a built-in UI — no prefix key needed. The default keybindings are 
 | `Ctrl+q` | Quit zellij |
 
 Mouse is enabled: click to focus, scroll to scroll.
+
+---
+
+### Vim / Neovim
+
+This repo uses a split editor model:
+
+- `vim` uses [`.vimrc`](.vimrc) for a small, portable setup
+- IntelliJ / IdeaVim uses [`.ideavimrc`](.ideavimrc)
+- `nvim` uses [`lazyvim/`](lazyvim/), symlinked to `~/.config/nvim`
+
+This avoids Neovim config conflicts and keeps `.vimrc` easy to reuse across IDEs.
 
 ---
 
