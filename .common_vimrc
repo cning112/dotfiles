@@ -8,18 +8,6 @@ set number                  " 显示行号
 "set relativenumber          " 显示相对行号
 set wrap                    " 自动换行
 set cursorline              " 高亮当前行
-set background=dark         " 设置背景为暗色
-syntax on                   " 启用语法高亮
-colorscheme desert          " 设置配色方案
-
-" 使用系统剪贴板
-set clipboard=unnamedplus
-" 将 y 映射为复制到系统剪贴板
-nnoremap y "+y
-vnoremap y "+y
-" 将 p 映射为从系统剪贴板粘贴
-nnoremap p "+p
-vnoremap p "+p
 
 " 设置 Tab 键相关配置
 set tabstop=4               " 设置 Tab 键的宽度为 4 个空格
@@ -33,6 +21,3 @@ set smartindent             " 智能缩进
 
 " 设置 leader 键，例如将 \ 设置为 ,
 let mapleader = ","
-
-
-" 其他通用配置...
