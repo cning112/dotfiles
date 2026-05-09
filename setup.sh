@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 定义当前脚本目录
-SCRIPT_DIR=$(cd $(dirname $0) && pwd)
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 echo "Script directory: $SCRIPT_DIR"
 
 # 检查操作系统类型
@@ -38,7 +38,7 @@ install_software() {
 
     if [ ! -d "$HOME/.nvm" ]; then
         echo "Installing NVM..."
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh -o install.sh
+        curl -o install.sh https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh
         chmod +x install.sh
         bash install.sh
         rm install.sh
@@ -50,7 +50,7 @@ install_software() {
         source "$HOME/.cargo/env"
     fi
 
-    if [ ! -d "$HOME/miniconda3" ] || [ -z "$(ls -A $HOME/miniconda3)" ]; then
+    if [ ! -d "$HOME/miniconda3" ] || [ -z "$(ls -A "$HOME/miniconda3")" ]; then
         echo "Installing Miniconda..."
         mkdir -p $HOME/miniconda3
         if [ "$OS_TYPE" = "Darwin" ]; then
