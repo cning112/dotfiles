@@ -6,6 +6,7 @@ alias ll="ls -alh"
 alias vi="nvim"
 alias awslocal="uvx --from awscli-local awslocal"
 alias h="history | fzf"
+alias cc="claude"
 
 # bat: better cat with syntax highlighting
 if command -v bat &>/dev/null; then

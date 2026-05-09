@@ -18,6 +18,7 @@ export IS_MACOS IS_LINUX IS_WSL
 # --------------------------------------------------------
 # Load other configuration files
 # --------------------------------------------------------
+if [ -s "$HOME/.env.local" ]; then source "$HOME/.env.local"; fi
 if [ -s "$HOME/.tools" ]; then source "$HOME/.tools"; fi
 if [ -s "$HOME/.aliases" ]; then source "$HOME/.aliases"; fi
 if [ -s "$HOME/.functions" ]; then source "$HOME/.functions"; fi
