@@ -35,7 +35,7 @@ SYMLINKS=(
     .zshrc .bashrc .bash_profile
     .commonrc .aliases .functions .tools
     .gitconfig .gitignore
-    .vimrc .ideavimrc .editorconfig
+    .vimrc .ideavimrc .editorconfig .common_vimrc
     .ripgreprc
 )
 
@@ -87,7 +87,7 @@ fi
 if [ -L "$HOME/.config/nvim" ]; then
     ok "~/.config/nvim symlinked"
 else
-    fail "~/.config/nvim is not symlinked (run setup.sh)"
+    info "~/.config/nvim not symlinked (run setup.sh or link lazyvim/ manually)"
 fi
 
 if [ -f "$HOME/.config/nvim/init.lua" ]; then
