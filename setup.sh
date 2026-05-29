@@ -92,6 +92,7 @@ install_software() {
     mkdir -p "$HOME/.config/ghostty"
     mkdir -p "$HOME/.config/zellij"
     mkdir -p "$HOME/.config"
+    mkdir -p "$HOME/.claude"
 
     # Neovim uses the LazyVim config in this repo. Back up any existing config
     # directory so we do not leave both init.lua and init.vim in place.
@@ -121,6 +122,8 @@ install_software() {
     ln -sf "$SCRIPT_DIR/bat/config" "$HOME/.config/bat/config"
     ln -sf "$SCRIPT_DIR/starship.toml" "$HOME/.config/starship.toml"
     ln -sf "$SCRIPT_DIR/ghostty/config" "$HOME/.config/ghostty/config"
+    ln -sf "$SCRIPT_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+    ln -sf "$SCRIPT_DIR/claude/RTK.md" "$HOME/.claude/RTK.md"
 
     echo "Installing Vim and Neovim plugins..."
     vim +PlugInstall +qall
