@@ -21,3 +21,7 @@ fi
 
 # Starship prompt (must be last)
 command -v starship &>/dev/null && eval "$(starship init bash)"
+
+
+# Added by Antigravity CLI installer
+export PATH="/Users/cning/.local/bin:$PATH"
