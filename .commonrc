@@ -92,9 +92,23 @@ if command -v fzf &>/dev/null; then
 fi
 
 # --------------------------------------------------------
+# fzf shell integration (keybindings: ctrl+r, ctrl+t, alt+c)
+# --------------------------------------------------------
+if command -v fzf &>/dev/null; then
+    if [ -n "$ZSH_VERSION" ]; then
+        eval "$(fzf --zsh)"
+    elif [ -n "$BASH_VERSION" ]; then
+        eval "$(fzf --bash)"
+    fi
+fi
+
+# --------------------------------------------------------
 # Ripgrep
 # --------------------------------------------------------
 export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
+
+# Daily CLI practice tip
+command -v _cli_tip &>/dev/null && _cli_tip
 
 # --------------------------------------------------------
 # Deduplicate $PATH

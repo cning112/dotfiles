@@ -63,6 +63,83 @@ function extract() {
     esac
 }
 
+# y: yazi file manager that cds to last directory on exit
+function y() {
+    local tmp cwd
+    tmp="$(mktemp -t "yazi-cwd.XXXXX")"
+    yazi "$@" --cwd-file="$tmp"
+    cwd="$(cat -- "$tmp")"
+    [ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+    rm -f -- "$tmp"
+}
+
+# frg: search file contents with ripgrep, preview matches, open in editor
+function frg() {
+    local result file line
+    result=$(rg --color=always --line-number --no-heading --smart-case "${*:-}" |
+        fzf --ansi --delimiter=: \
+            --preview 'bat --style=numbers --color=always --highlight-line {2} {1}' \
+            --preview-window=right:60%:+{2}+3/3)
+    [ -n "$result" ] && {
+        file=$(echo "$result" | cut -d: -f1)
+        line=$(echo "$result" | cut -d: -f2)
+        nvim +"$line" "$file"
+    }
+}
+
+# gco: fuzzy git branch checkout
+function gco() {
+    local branch
+    branch=$(git branch -a --color=always | grep -v '/HEAD\s' | sort |
+        fzf --ansi --tac --preview 'git log --oneline --color=always $(echo {} | sed "s/.* //")' |
+        sed 's/.* //' | sed 's#remotes/[^/]*/##')
+    [ -n "$branch" ] && git checkout "$branch"
+}
+
+# fo: fuzzy file open in editor (filename search, pairs with frg for content search)
+function fo() {
+    local file
+    file=$(fd --type f --hidden --follow --exclude .git |
+        fzf --preview 'bat --style=numbers --color=always --line-range=:100 {}')
+    [ -n "$file" ] && nvim "$file"
+}
+
+# fstash: fuzzy git stash browser — preview diff and pop selected stash
+function fstash() {
+    local stash
+    stash=$(git stash list |
+        fzf --preview 'git stash show -p $(echo {} | cut -d: -f1) --color=always' |
+        cut -d: -f1)
+    [ -n "$stash" ] && git stash pop "$stash"
+}
+
+# fssh: fuzzy SSH host picker from ~/.ssh/config
+function fssh() {
+    local host
+    host=$(grep "^Host " ~/.ssh/config 2>/dev/null | grep -v '\*' | awk '{print $2}' |
+        fzf --preview 'grep -A5 "^Host {}$" ~/.ssh/config')
+    [ -n "$host" ] && ssh "$host"
+}
+
+# _cli_tip: show one rotating practice prompt per day at shell startup
+function _cli_tip() {
+    local tips=(
+        "Practice: find a file with ctrl+t instead of typing the path"
+        "Practice: use 'z <partial>' to jump somewhere you've been before"
+        "Practice: search inside files with 'frg <term>' and open at the match"
+        "Practice: browse with 'y' — navigate, then quit to land in that dir"
+        "Practice: fuzzy checkout a branch with 'gco' instead of 'git checkout'"
+        "Practice: kill a process with 'fkill' instead of 'ps aux | grep'"
+        "Practice: use 'zi' for interactive zoxide — faster than fcd for known dirs"
+        "Practice: ctrl+r for history — try recalling a command from last week"
+        "Practice: open a file by name with 'fo' instead of typing the path"
+        "Practice: browse and pop a git stash with 'fstash'"
+        "Practice: connect to a server with 'fssh' instead of typing the host"
+    )
+    local idx=$(( ($(date +%j) % ${#tips[@]}) + 1 ))  # 1-based for zsh arrays
+    printf '\e[2m[tip] %s\e[0m\n' "${tips[$idx]}"
+}
+
 # ccds: invoke claude with DeepSeek endpoint
 function ccds() {
     ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic \
