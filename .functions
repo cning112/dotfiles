@@ -96,6 +96,20 @@ function gco() {
     [ -n "$branch" ] && git checkout "$branch"
 }
 
+# fopen: fuzzy file open with OS default app (optional dir argument, defaults to current)
+function fopen() {
+    local dir="${1:-.}"
+    local file
+    file=$(fd --type f . "$dir" |
+        fzf --preview 'bat --style=numbers --color=always --line-range=:50 {} 2>/dev/null || ls -la {}')
+    [ -n "$file" ] || return
+    if $IS_MACOS; then
+        open "$file"
+    else
+        xdg-open "$file"
+    fi
+}
+
 # fo: fuzzy file open in editor (filename search, pairs with frg for content search)
 function fo() {
     local file
@@ -135,6 +149,7 @@ function _cli_tip() {
         "Practice: open a file by name with 'fo' instead of typing the path"
         "Practice: browse and pop a git stash with 'fstash'"
         "Practice: connect to a server with 'fssh' instead of typing the host"
+        "Practice: open a file with its default app using 'fopen ~/Downloads'"
     )
     local idx=$(( ($(date +%j) % ${#tips[@]}) + 1 ))  # 1-based for zsh arrays
     printf '\e[2m[tip] %s\e[0m\n' "${tips[$idx]}"
