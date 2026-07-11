@@ -3,7 +3,7 @@ shopt -s histappend
 
 export HISTSIZE=5000
 export HISTFILESIZE=10000
-export HISTCONTROL=ignoredups:erasedups   # skip duplicate entries
+export HISTCONTROL=ignoredups             # retain frequency evidence; skip adjacent noise
 
 # Prefix history search with typed text (up/down arrows)
 bind '"\e[A": history-search-backward'

@@ -150,9 +150,31 @@ function _cli_tip() {
         "Practice: browse and pop a git stash with 'fstash'"
         "Practice: connect to a server with 'fssh' instead of typing the host"
         "Practice: open a file with its default app using 'fopen ~/Downloads'"
+        "Practice: run 'hist-analyze' to find alias opportunities and workflow tips"
     )
     local idx=$(( ($(date +%j) % ${#tips[@]}) + 1 ))  # 1-based for zsh arrays
     printf '\e[2m[tip] %s\e[0m\n' "${tips[$idx]}"
+}
+
+# hist-analyze: evidence-backed workflow suggestions from local Atuin history
+# Usage: hist-analyze [days]  (defaults to the last 30 days)
+function hist-analyze() {
+    local functions_file analyzer
+    functions_file=$(readlink "$HOME/.functions" 2>/dev/null || true)
+    if [ -z "$functions_file" ]; then
+        printf 'Unable to locate the dotfiles repository from ~/.functions.\n' >&2
+        return 1
+    fi
+    analyzer="$(dirname "$functions_file")/scripts/hist_analyze.py"
+    if [ ! -f "$analyzer" ]; then
+        printf 'History analyzer not found: %s\n' "$analyzer" >&2
+        return 1
+    fi
+    if ! command -v uv &>/dev/null; then
+        printf 'hist-analyze requires uv; run ./install_brew_apps.sh first.\n' >&2
+        return 1
+    fi
+    uv run --script "$analyzer" "$@"
 }
 
 # ccds: invoke claude with DeepSeek endpoint

@@ -51,7 +51,7 @@ done
 # --------------------------------------------------------
 section "Required CLI tools"
 # --------------------------------------------------------
-TOOLS=(nvim fzf git zoxide)
+TOOLS=(nvim fzf git zoxide uv atuin)
 for t in "${TOOLS[@]}"; do
     command -v "$t" &>/dev/null && ok "$t found ($(command -v $t))" || fail "$t not found"
 done
@@ -114,6 +114,12 @@ else
     info "~/.config/zellij/config.kdl not symlinked (run setup.sh)"
 fi
 
+if [ -L "$HOME/.config/atuin/config.toml" ]; then
+    ok "~/.config/atuin/config.toml symlinked"
+else
+    info "~/.config/atuin/config.toml not symlinked (run setup.sh)"
+fi
+
 # --------------------------------------------------------
 section "Shell config syntax check"
 # --------------------------------------------------------
@@ -125,6 +131,28 @@ for f in .commonrc .aliases .functions .tools; do
         bash -n "$SCRIPT_DIR/$f"
     fi
 done
+
+if zsh -n "$SCRIPT_DIR/.zshrc" 2>/dev/null; then
+    ok ".zshrc syntax OK"
+else
+    fail ".zshrc has syntax errors"
+fi
+
+# --------------------------------------------------------
+section "History analyzer"
+# --------------------------------------------------------
+if uv run --script tests/test_hist_analyze.py >/dev/null 2>&1; then
+    ok "hist-analyze behavior tests pass"
+else
+    fail "hist-analyze behavior tests failed"
+    uv run --script tests/test_hist_analyze.py
+fi
+
+if command -v atuin &>/dev/null; then
+    [ "$(ATUIN_CONFIG_DIR="$SCRIPT_DIR/atuin" atuin config get auto_sync --resolved 2>/dev/null)" = "false" ] \
+        && ok "Atuin automatic sync disabled" \
+        || fail "Atuin automatic sync must be disabled"
+fi
 
 # --------------------------------------------------------
 section "FZF config"

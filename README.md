@@ -91,10 +91,13 @@ dotfiles/
 ├── zellij/config.kdl  # Zellij config
 ├── starship.toml      # Starship prompt config
 ├── bat/config         # Bat config
+├── atuin/config.toml  # Local-only Atuin history configuration
 ├── brew-apps.txt      # Cross-platform CLI tools
 ├── brew-apps-macos.txt# macOS-only cask apps
 ├── setup.sh           # Full setup script
 ├── install_brew_apps.sh
+├── scripts/hist_analyze.py # Isolated command-history analyzer
+├── tests/test_hist_analyze.py # Analyzer behavior tests
 └── test.sh            # Verify setup is working
 ```
 
@@ -125,6 +128,30 @@ z foo bar      # match "foo" and "bar" in path
 zi             # interactive jump with fzf
 z -            # go back to previous directory
 ```
+
+### Command-history analysis
+
+Atuin stores detailed local history so `hist-analyze` can identify repeated
+workflows, failures, slow commands, and parameterized function candidates.
+Automatic sync is disabled in `atuin/config.toml`.
+
+Import existing zsh history once after setup:
+
+```bash
+atuin import zsh
+```
+
+Analyze the last 30 days, or provide another window:
+
+```bash
+hist-analyze
+hist-analyze 7
+```
+
+Recommendations are evidence-gated. The analyzer warns when Atuin has too few
+records, normalizes aliases and command prefixes, and redacts common secret
+arguments before displaying function candidates. It runs in an isolated
+environment through `uv`; it never installs into the global Python environment.
 
 ---
 

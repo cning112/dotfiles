@@ -1,0 +1,11 @@
+# Atuin — local-only shell history database
+# https://atuin.sh/docs/config
+
+enter_accept = true
+auto_sync = false
+search_mode = "fuzzy"
+
+[daemon]
+# Local daemon for efficient history persistence and search (v18+)
+enabled = true
+autostart = true

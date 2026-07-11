@@ -91,6 +91,7 @@ install_software() {
     mkdir -p "$HOME/.config/bat"
     mkdir -p "$HOME/.config/ghostty"
     mkdir -p "$HOME/.config/zellij"
+    mkdir -p "$HOME/.config/atuin"
     mkdir -p "$HOME/.config"
     mkdir -p "$HOME/.claude"
 
@@ -122,8 +123,14 @@ install_software() {
     ln -sf "$SCRIPT_DIR/bat/config" "$HOME/.config/bat/config"
     ln -sf "$SCRIPT_DIR/starship.toml" "$HOME/.config/starship.toml"
     ln -sf "$SCRIPT_DIR/ghostty/config" "$HOME/.config/ghostty/config"
+    ln -sf "$SCRIPT_DIR/atuin/config.toml" "$HOME/.config/atuin/config.toml"
     ln -sf "$SCRIPT_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
     ln -sf "$SCRIPT_DIR/claude/RTK.md" "$HOME/.claude/RTK.md"
+
+    if command -v atuin &>/dev/null && [ -s "$HOME/.zsh_history" ]; then
+        echo "Existing zsh history detected. Import it once for useful analysis:"
+        echo "  atuin import zsh"
+    fi
 
     echo "Installing Vim and Neovim plugins..."
     vim +PlugInstall +qall
