@@ -7,8 +7,3 @@ fi
 if [ -f "$HOME/.bashrc" ]; then
     . "$HOME/.bashrc"
 fi
-
-
-
-# Added by Antigravity CLI installer
-export PATH="/Users/cning/.local/bin:$PATH"

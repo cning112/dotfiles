@@ -111,6 +111,14 @@ export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
 command -v _cli_tip &>/dev/null && _cli_tip
 
 # --------------------------------------------------------
-# Deduplicate $PATH
+# Deduplicate $PATH (keeps the first occurrence of each entry)
 # --------------------------------------------------------
-export PATH="$(echo "$PATH" | /usr/bin/awk 'BEGIN { RS=":"; } { sub(sprintf("%c$", 10), ""); if (A[$0]) {} else { A[$0]=1; printf(((NR==1) ?"" : ":") $0) }}')"
+# This runs before .zshrc/.bashrc add their own PATH entries, so anything added
+# there must be duplicate-guarded itself (see the Antigravity/taobao blocks).
+PATH_AWK="$(command -v awk 2>/dev/null || true)"
+if [ -n "$PATH_AWK" ]; then
+    deduped_path="$(printf '%s' "$PATH" | "$PATH_AWK" 'BEGIN { RS=":"; } { sub(sprintf("%c$", 10), ""); if (A[$0]) {} else { A[$0]=1; printf(((NR==1) ?"" : ":") $0) }}')"
+    # Never assign an empty result: a failing pipeline would otherwise wipe $PATH.
+    [ -n "$deduped_path" ] && export PATH="$deduped_path"
+fi
+unset PATH_AWK deduped_path

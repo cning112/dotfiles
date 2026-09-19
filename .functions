@@ -152,8 +152,18 @@ function _cli_tip() {
         "Practice: open a file with its default app using 'fopen ~/Downloads'"
         "Practice: run 'hist-analyze' to find alias opportunities and workflow tips"
     )
-    local idx=$(( ($(date +%j) % ${#tips[@]}) + 1 ))  # 1-based for zsh arrays
-    printf '\e[2m[tip] %s\e[0m\n' "${tips[$idx]}"
+    # Index through positional parameters: zsh arrays are 1-based and bash arrays
+    # are 0-based, so "${tips[$idx]}" with a 1-based idx silently reads past the
+    # end in bash (printing an empty tip).
+    set -- "${tips[@]}"
+    local count=$#
+    local day_of_year
+    day_of_year=$(date +%j)
+    # date +%j is zero-padded, and bash would read e.g. 008 as an invalid octal
+    # (erroring on ~70 days a year), so force base 10.
+    local idx=$(( (10#$day_of_year % count) + 1 ))
+    shift $((idx - 1))
+    printf '\e[2m[tip] %s\e[0m\n' "$1"
 }
 
 # hist-analyze: evidence-backed workflow suggestions from local Atuin history
@@ -187,5 +197,6 @@ function ccds() {
     ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash" \
     CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-flash" \
     CLAUDE_CODE_EFFORT_LEVEL="max" \
+    CLAUDE_CODE_AUTO_COMPACT_WINDOW=786432 \
     claude "$@"
 }

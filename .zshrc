@@ -32,13 +32,20 @@ fpath+=~/.zfunc; autoload -Uz compinit; compinit
 zstyle ':completion:*' menu select
 
 # Antigravity
-if [ -d "$HOME/.antigravity/antigravity/bin" ]; then
-    export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
+# Guarded with a case match so sourcing this file twice cannot duplicate the entry
+# ($PATH is deduplicated in .commonrc, which runs before this).
+ANTIGRAVITY_BIN="$HOME/.antigravity/antigravity/bin"
+if [ -d "$ANTIGRAVITY_BIN" ]; then
+    case ":$PATH:" in *":$ANTIGRAVITY_BIN:"*) ;; *) export PATH="$ANTIGRAVITY_BIN:$PATH" ;; esac
+fi
+
+# taobao-native CLI (macOS only). $HOME-relative so this file stays portable.
+if $IS_MACOS; then
+    TBN_CLI_BIN="$HOME/Library/Application Support/taobao/cli/bin"
+    if [ -d "$TBN_CLI_BIN" ]; then
+        case ":$PATH:" in *":$TBN_CLI_BIN:"*) ;; *) export PATH="$PATH:$TBN_CLI_BIN" ;; esac
+    fi
 fi
 
 # Starship prompt (must be last)
 command -v starship &>/dev/null && eval "$(starship init zsh)"
-
-
-# Added by Antigravity CLI installer
-export PATH="/Users/cning/.local/bin:$PATH"
