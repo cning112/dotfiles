@@ -11,13 +11,22 @@ import argparse
 import re
 import shlex
 import sqlite3
+import sys
 import time
 from collections import Counter, defaultdict
+from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
 
 
 DAY_NS = 86_400 * 1_000_000_000
+# 100 years: keeps days * DAY_NS inside SQLite's signed 64-bit integer range.
+MAX_DAYS = 36_500
+DEFAULT_DAYS = 30
+# A single foreground command cannot plausibly run longer than this. Atuin
+# records multi-day durations when a session spans a suspend, which would
+# otherwise produce nonsense such as "npx — 248051.2s average".
+MAX_DURATION_NS = 24 * 60 * 60 * 1_000_000_000
 DEFAULT_DB = Path.home() / ".local" / "share" / "atuin" / "history.db"
 DEFAULT_ALIASES = Path.home() / ".aliases"
 PREFIX_COMMANDS = {"command", "env", "sudo"}
@@ -189,6 +198,11 @@ SENSITIVE_MARKERS = (
     "secret",
     "token",
 )
+# Flags whose *name* carries no marker but that are known to take a secret value
+# (e.g. `-p hunter2`). The value following one of these is always redacted.
+SENSITIVE_FLAGS = frozenset(
+    {"-p", "-P", "--pass", "--auth", "--apikey", "--api-key", "--bearer"}
+)
 
 
 @dataclass(frozen=True)
@@ -255,10 +269,17 @@ def command_family(command: str, aliases: dict[str, list[str]]) -> str | None:
     executable = Path(words[0]).name
     subcommand = None
     if executable in KNOWN_SUBCOMMANDS:
-        subcommand = next(
-            (word for word in words[1:] if word in KNOWN_SUBCOMMANDS[executable]),
-            None,
-        )
+        # Only the first non-option argument can be the subcommand. Scanning every
+        # argument would attribute e.g. `npm ls run` to the `npm run` workflow.
+        # Options are skipped (and anything after the first real positional stops
+        # the search) so `git -c k=v status` still resolves to `git status`.
+        for word in words[1:]:
+            if word in KNOWN_SUBCOMMANDS[executable]:
+                subcommand = word
+                break
+            if word.startswith("-") or "=" in word:
+                continue
+            break
     return f"{executable} {subcommand}" if subcommand else executable
 
 
@@ -282,6 +303,13 @@ def command_template(command: str) -> str | None:
             redact_next = False
             continue
         name, separator, _value = word.partition("=")
+        if name in SENSITIVE_FLAGS:
+            if separator:
+                redacted.append(f"{name}=[REDACTED]")
+            else:
+                redacted.append(word)
+                redact_next = True
+            continue
         if any(marker in name.lower() for marker in SENSITIVE_MARKERS):
             if separator:
                 redacted.append(f"{name}=[REDACTED]")
@@ -296,9 +324,20 @@ def command_template(command: str) -> str | None:
     return template if "<module>" in template else None
 
 
+def connect_readonly(database: Path) -> sqlite3.Connection:
+    # as_uri() percent-encodes the path; interpolating it raw would let a "?" or
+    # "#" in the path be parsed as URI syntax.
+    connection = sqlite3.connect(
+        f"{database.resolve().as_uri()}?mode=ro", uri=True, timeout=5.0
+    )
+    # Shell history holds arbitrary bytes; never let decoding raise.
+    connection.text_factory = lambda raw: raw.decode("utf-8", "replace")
+    return connection
+
+
 def load_entries(database: Path, days: int) -> tuple[list[HistoryEntry], int]:
     cutoff = time.time_ns() - days * DAY_NS
-    with sqlite3.connect(f"file:{database}?mode=ro", uri=True) as connection:
+    with closing(connect_readonly(database)) as connection:
         total = connection.execute(
             "SELECT COUNT(*) FROM history WHERE deleted_at IS NULL"
         ).fetchone()[0]
@@ -307,7 +346,7 @@ def load_entries(database: Path, days: int) -> tuple[list[HistoryEntry], int]:
             SELECT command, duration, exit
             FROM history
             WHERE deleted_at IS NULL AND timestamp >= ?
-            ORDER BY timestamp
+            ORDER BY timestamp, id
             """,
             (cutoff,),
         ).fetchall()
@@ -315,20 +354,42 @@ def load_entries(database: Path, days: int) -> tuple[list[HistoryEntry], int]:
 
 
 def positive_days(value: str) -> int:
-    days = int(value)
-    if days < 1:
-        raise argparse.ArgumentTypeError("days must be a positive integer")
+    try:
+        days = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"invalid day count: {value!r}") from None
+    if not 1 <= days <= MAX_DAYS:
+        raise argparse.ArgumentTypeError(f"days must be between 1 and {MAX_DAYS}")
     return days
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("days", nargs="?", default=30, type=positive_days)
+    parser.add_argument(
+        "days",
+        nargs="?",
+        default=None,
+        type=positive_days,
+        help=f"analysis window in days (1-{MAX_DAYS}), as a positional",
+    )
+    parser.add_argument(
+        "-n",
+        "--days",
+        dest="days_option",
+        type=positive_days,
+        default=None,
+        help="analysis window in days (same as the positional form)",
+    )
     parser.add_argument("--db", type=Path, default=DEFAULT_DB, help=argparse.SUPPRESS)
     parser.add_argument(
         "--aliases", type=Path, default=DEFAULT_ALIASES, help=argparse.SUPPRESS
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.days_option is not None:
+        args.days = args.days_option
+    if args.days is None:
+        args.days = DEFAULT_DAYS
+    return args
 
 
 def main() -> int:
@@ -338,7 +399,17 @@ def main() -> int:
         print("Install Atuin and import existing history with: atuin import zsh")
         return 1
 
-    entries, total = load_entries(args.db, args.days)
+    try:
+        entries, total = load_entries(args.db, args.days)
+    except sqlite3.Error as error:
+        print(f"Could not read {args.db}: {error}", file=sys.stderr)
+        print(
+            "The file may not be an Atuin database, may use an older schema, or "
+            "may be locked by a running Atuin daemon.",
+            file=sys.stderr,
+        )
+        return 2
+
     aliases = load_aliases(args.aliases)
     normalized_entries = [
         (entry, family)
@@ -389,7 +460,11 @@ def main() -> int:
 
     durations: dict[str, list[int]] = defaultdict(list)
     for entry, family in normalized_entries:
-        durations[family].append(entry.duration_ns)
+        # Skip durations Atuin could not measure (-1) and implausible ones from
+        # sessions that spanned a suspend: both distort the average and can hide
+        # genuinely slow workflows behind a filtered-out outlier.
+        if 0 < entry.duration_ns <= MAX_DURATION_NS:
+            durations[family].append(entry.duration_ns)
     slow_workflows = [
         (family, sum(values) / len(values) / 1_000_000_000, len(values))
         for family, values in durations.items()

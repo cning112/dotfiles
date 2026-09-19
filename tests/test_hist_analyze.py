@@ -419,6 +419,118 @@ class HistAnalyzeCliTests(unittest.TestCase):
         self.assertNotIn(secret, result.stdout)
         self.assertIn("1× git status", result.stdout)
 
+    def test_subcommand_is_matched_only_in_the_subcommand_position(self) -> None:
+        now = time.time_ns()
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "history.db"
+            create_history_db(
+                database,
+                [
+                    # "run" is an argument to `ls`, not the npm subcommand
+                    (now - DAY_NS, 100_000_000, 0, "npm ls run", "/repo"),
+                    (now - DAY_NS, 100_000_000, 0, "npm ls run", "/repo"),
+                ],
+            )
+
+            result = self.run_analyzer(database)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("2× npm", result.stdout)
+        self.assertNotIn("npm run", result.stdout)
+
+    def test_options_before_the_subcommand_still_resolve_it(self) -> None:
+        now = time.time_ns()
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "history.db"
+            create_history_db(
+                database,
+                [
+                    (
+                        now - DAY_NS,
+                        100_000_000,
+                        0,
+                        "git -c http.extraHeader=Authorization:secret status -s",
+                        "/repo",
+                    )
+                ],
+            )
+
+            result = self.run_analyzer(database)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("1× git status", result.stdout)
+
+    def test_function_candidates_redact_short_flag_secrets(self) -> None:
+        now = time.time_ns()
+        secret = "hunter2-do-not-print"
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "history.db"
+            create_history_db(
+                database,
+                [
+                    (
+                        now - DAY_NS,
+                        2_000_000_000,
+                        0,
+                        f"./gradlew :modules:{module}:test -p {secret}",
+                        "/repo",
+                    )
+                    for module in ("adapter", "integration", "query")
+                ],
+            )
+
+            result = self.run_analyzer(database)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn(secret, result.stdout)
+        self.assertIn("-p [REDACTED]", result.stdout)
+
+    def test_unmeasurable_and_implausible_durations_are_ignored(self) -> None:
+        now = time.time_ns()
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "history.db"
+            create_history_db(
+                database,
+                [
+                    (now - DAY_NS, 60_000_000_000, 0, "./gradlew test", "/repo"),
+                    (now - DAY_NS, 80_000_000_000, 0, "./gradlew test", "/repo"),
+                    (now - DAY_NS, 100_000_000_000, 0, "./gradlew test", "/repo"),
+                    # Atuin's "duration unknown" marker; must not dilute the average
+                    (now - DAY_NS, -1, 0, "./gradlew test", "/repo"),
+                    # A session that spanned a suspend; must not invent a slow workflow
+                    (now - DAY_NS, 1_630_841_000_000_000, 0, "./gradlew test", "/repo"),
+                ],
+            )
+
+            result = self.run_analyzer(database)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("gradlew — 80.0s average across 3 runs", result.stdout)
+
+    def test_absurd_day_counts_are_rejected_without_a_traceback(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "history.db"
+            create_history_db(database, [])
+
+            result = self.run_analyzer(database, "999999999")
+
+        self.assertEqual(result.returncode, 2)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn("between 1 and", result.stderr)
+
+    def test_an_incompatible_database_reports_cleanly(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "other.db"
+            with closing(sqlite3.connect(database)) as connection:
+                connection.execute("CREATE TABLE other (x INTEGER)")
+                connection.commit()
+
+            result = self.run_analyzer(database)
+
+        self.assertEqual(result.returncode, 2)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn("Could not read", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
