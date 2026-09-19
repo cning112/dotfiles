@@ -248,6 +248,34 @@ else
         "$HOME/.nvm/"*) ok "nvm's node wins on \$PATH ($nvm_node)" ;;
         *) fail "node resolves to $nvm_node; expected nvm's version to take priority" ;;
     esac
+
+    # npm injects its config as npm_config_* into every process it spawns, so a
+    # shell launched via npx/npm exec inherits it. npm_config_prefix pins npm's
+    # global prefix and makes nvm refuse to run, so .tools must drop the prefix
+    # values -- while leaving deliberate settings such as the registry intact.
+    leaked=$(env npm_config_prefix=/opt/homebrew npm_config_global_prefix=/opt/homebrew \
+        npm_config_local_prefix=/tmp npm_config_registry=https://example.invalid \
+        zsh -i -c 'printf "\n__NVM__%s|%s|%s\n" "${npm_config_prefix:-unset}" "$(npm config get prefix 2>/dev/null)" "$(npm config get registry 2>/dev/null)"' 2>/dev/null |
+        sed -n 's/^__NVM__//p')
+    leaked_var=${leaked%%|*}
+    leaked_rest=${leaked#*|}
+    leaked_prefix=${leaked_rest%%|*}
+    leaked_registry=${leaked_rest##*|}
+
+    if [ "$leaked_var" = "unset" ]; then
+        ok "leaked npm_config_prefix is dropped at startup"
+    else
+        fail "npm_config_prefix survived startup as '$leaked_var'; nvm will refuse to run"
+    fi
+    case "$leaked_prefix" in
+        "$HOME/.nvm/"*) ok "npm's global prefix is nvm's, not the leaked value" ;;
+        "") info "could not determine npm's global prefix" ;;
+        *) fail "npm's global prefix is still pinned to $leaked_prefix" ;;
+    esac
+    case "$leaked_registry" in
+        *example.invalid*) ok "deliberate npm settings (registry) are preserved" ;;
+        *) info "npm registry setting not observed (got '${leaked_registry:-}')" ;;
+    esac
 fi
 
 # --------------------------------------------------------

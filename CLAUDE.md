@@ -43,7 +43,8 @@ Shell and tool configuration for macOS and WSL2 (Ubuntu). All dotfiles are manag
 - Anything that adds to `$PATH` **after** `.commonrc` (e.g. in `.zshrc`) must be duplicate-guarded, because the dedupe has already run by then. Follow the `case ":$PATH:" in *":$dir:"*) ;; *) ... ;; esac` pattern.
 - Never hardcode `/Users/<name>` paths; use `$HOME` and gate machine-specific tools behind `$IS_MACOS`/`$IS_LINUX`.
 - Shell functions must work in both zsh and bash. Note that zsh arrays are 1-based and bash arrays 0-based, and bash reads zero-padded numbers (`date +%j`) as octal — use `10#` to force base 10. Also note zsh's `type -t` prints nothing for functions; use `command -v` to test whether a function exists.
-- Keep heavy tool initialisation lazy (see the `nvm` stub in `.tools`). Measure with `zsh -i -c exit` before and after rather than guessing.
+- Keep heavy tool initialisation lazy (see the `nvm` stub in `.tools`). Measure with `zsh -i -c exit` before and after rather than guessing — the absolute number swings with ambient load and filesystem cache, so always A/B the two states back to back.
+- npm exports its whole computed config as `npm_config_*` into every process it spawns, so a shell started via `npx`/`npm exec` inherits it. `.tools` unsets the prefix values because `npm_config_prefix` makes nvm refuse to run; other `npm_config_*` values are left alone because they may be deliberate (registry, auth).
 
 ## Platform detection
 

@@ -31,6 +31,15 @@ fi
 # Sourcing nvm.sh costs ~0.35s on every shell start: it is ~4.5k lines and runs
 # its own "use default" while loading. Define a stub instead and load the real
 # thing on first use.
+#
+# npm exports its computed configuration as npm_config_* into every process it
+# spawns, so a shell launched via npx/npm exec inherits them (the Homebrew value
+# comes from Homebrew's builtin npmrc). npm_config_prefix is the damaging one:
+# it pins npm's global prefix, and nvm refuses to run at all while it is set
+# ("nvm is not compatible with the npm_config_prefix environment variable").
+# Unset the prefix values so npm recomputes them; the rest of npm_config_* is
+# deliberately left alone because it can hold real settings (registry, auth).
+unset npm_config_prefix npm_config_global_prefix npm_config_local_prefix
 export NVM_DIR="$HOME/.nvm"
 if [ -d "$NVM_DIR" ]; then
     nvm() {
