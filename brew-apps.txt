@@ -13,6 +13,11 @@ atuin
 # Editor
 nvim
 
+# Modern replacements suggested by 'hist-analyze' (see .functions ALTERNATIVES)
+sd
+xh
+doggo
+
 # Git
 git-delta
 lazygit

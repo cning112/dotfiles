@@ -81,7 +81,7 @@ dotfiles/
 ├── .bash_profile      # Bash login shell
 ├── .aliases           # Command aliases
 ├── .functions         # Shell functions
-├── .tools             # Tool initialisation (nvm, rust, conda, zoxide, direnv)
+├── .tools             # Tool initialisation (nvm, rust, conda, homebrew, zoxide, direnv, atuin)
 ├── .gitconfig         # Git config with delta pager
 ├── .vimrc             # Portable Vim config shared with Vim/IdeaVim-style editors
 ├── .common_vimrc      # Shared Vim options sourced by .vimrc and .ideavimrc
@@ -89,9 +89,12 @@ dotfiles/
 ├── .ripgreprc         # Ripgrep defaults
 ├── lazyvim/           # Neovim (LazyVim) config, symlinked to ~/.config/nvim
 ├── zellij/config.kdl  # Zellij config
+├── ghostty/config     # Ghostty terminal config
 ├── starship.toml      # Starship prompt config
 ├── bat/config         # Bat config
 ├── atuin/config.toml  # Local-only Atuin history configuration
+├── git/ignore         # Global git ignore, symlinked to ~/.config/git/ignore
+├── claude/            # Global Claude Code instructions (CLAUDE.md, RTK.md)
 ├── brew-apps.txt      # Cross-platform CLI tools
 ├── brew-apps-macos.txt# macOS-only cask apps
 ├── setup.sh           # Full setup script
@@ -152,6 +155,9 @@ Recommendations are evidence-gated. The analyzer warns when Atuin has too few
 records, normalizes aliases and command prefixes, and redacts common secret
 arguments before displaying function candidates. It runs in an isolated
 environment through `uv`; it never installs into the global Python environment.
+
+The modern replacements it may suggest (`sd`, `xh`, `doggo`) are included in
+`brew-apps.txt`, so `./install_brew_apps.sh` makes the suggestions actionable.
 
 ---
 
@@ -352,8 +358,18 @@ lazygit    # or: lg (alias)
 | `fkill` | `fkill` | Fuzzy process kill |
 | `fenv` | `fenv` | Fuzzy search env vars |
 | `fshow` | `fshow` | Fuzzy git log browser |
+| `frg` | `frg term` | Ripgrep contents, preview matches, open at the match in nvim |
+| `fo` | `fo` | Fuzzy open a file by name in nvim |
+| `fopen` | `fopen [dir]` | Fuzzy open a file with the OS default app |
+| `fstash` | `fstash` | Browse git stashes and pop the selected one |
+| `fssh` | `fssh` | Fuzzy pick a host from `~/.ssh/config` and connect |
+| `gco` | `gco` | Fuzzy git branch checkout |
+| `y` | `y` | Yazi file manager; cd to the last directory on exit |
 | `port` | `port 8080` | Show what's using a port |
 | `extract` | `extract file.tar.gz` | Universal archive extractor |
+| `hist-analyze` | `hist-analyze [days]` | Evidence-backed workflow suggestions from Atuin history |
+| `ccds` | `ccds` | Run Claude Code against the DeepSeek endpoint |
+| `_cli_tip` | (automatic) | One rotating CLI practice tip per day at shell startup |
 
 ---
 

@@ -1,121 +1,63 @@
 # WARP.md
 
-This file provides guidance to WARP (warp.dev) when working with code in this repository.
+Guidance for WARP (warp.dev) when working in this repository.
+
+**`CLAUDE.md` is the source of truth for this repo's architecture.** This file
+covers only what is WARP-specific; if the two disagree, trust `CLAUDE.md` and
+fix this one.
 
 ## Overview
 
-This is a dotfiles repository for macOS and Linux systems that manages shell configurations, development tools, and editor settings through symbolic linking. The setup is primarily designed for zsh with oh-my-zsh, Neovim/Vim configuration, and automated installation of development tools via Homebrew.
+Dotfiles for macOS and WSL2, managed as symlinks from `~/dev/dotfiles/` into
+`$HOME`, so edits here take effect immediately without re-running setup.
 
-## Key Components
+There is no oh-my-zsh and no framework: `.zshrc` and `.bashrc` both source
+`.commonrc`, which loads `.tools`, `.aliases` and `.functions`.
 
-### Core Setup Scripts
-- **`setup.sh`**: Main installation script that orchestrates the entire dotfiles setup
-- **`setup_brew.sh`**: Homebrew installation and environment setup for both macOS and Linux
-- **`setup_shells.sh`**: Shell installation (bash/zsh) with Homebrew and default shell configuration
-- **`install_brew_apps.sh`**: Batch installer for applications listed in `brew-apps.txt`
+## Key commands
 
-### Configuration Architecture
-The configuration follows a modular structure:
-- **`.commonrc`**: Shared configuration loaded by both bash and zsh
-- **`.zshrc`**: Zsh-specific configuration that sources `.commonrc`
-- **`.bash_profile/.bashrc`**: Bash configurations that source `.commonrc`
-
-Key modularity components sourced by `.commonrc`:
-- **`.tools`**: Development tool initialization (NVM, Rust, Conda, Homebrew, warpify, zoxide)
-- **`.aliases`**: Command aliases and shortcuts
-- **`.functions`**: Custom shell functions
-
-### Editor Configuration
-- **`.vimrc`**: Vim configuration that sources `.common_vimrc`
-- **`.common_vimrc`**: Shared Vim/Neovim configuration with plugins (vim-surround, vim-easymotion)
-- **`.ideavimrc`**: IntelliJ Vim plugin configuration
-
-## Common Commands
-
-### Initial Setup
 ```bash
-# Full system setup (installs Homebrew, shells, tools, and creates symlinks)
-./setup.sh
-
-# Install additional applications from brew-apps.txt
-./install_brew_apps.sh brew-apps.txt
+./setup.sh                                  # full setup: Homebrew, shells, tools, symlinks
+./test.sh                                   # verify the setup (the only automated gate)
+./install_brew_apps.sh                      # install brew-apps.txt (+ macOS casks on Darwin)
+./install_brew_apps.sh brew-apps-macos.txt  # macOS-only cask apps
 ```
 
-### Individual Component Setup
-```bash
-# Setup only Homebrew
-source ./setup_brew.sh
+## Architecture
 
-# Setup only shells (bash and zsh)
-source ./setup_shells.sh
-```
+Shell config loading order (zsh and bash share `.commonrc`):
 
-### Configuration Management
-```bash
-# Create symbolic links for all dotfiles (run from dotfiles directory)
-ln -sf "$PWD/.zshrc" "$HOME/.zshrc"
-ln -sf "$PWD/.vimrc" "$HOME/.vimrc"
-# (Full list is in setup.sh install_software function)
+1. `.commonrc` — OS detection (`$IS_MACOS`, `$IS_LINUX`, `$IS_WSL`), sources
+   `.env.local` / `.tools` / `.aliases` / `.functions`, sets PATH, FZF env,
+   `RIPGREP_CONFIG_PATH`, then deduplicates `$PATH`
+2. `.tools` — nvm, rustup, conda, Homebrew, zoxide, direnv, atuin, warpify
+3. `.aliases` — aliases, `bat` overriding `cat`/`less`, git shortcuts
+4. `.functions` — fzf helpers (`fcd`, `fkill`, `fenv`, `fshow`, `frg`, `fopen`,
+   `fo`, `fstash`, `fssh`, `gco`), `mkcd`, `port`, `extract`, `y`,
+   `hist-analyze`, `ccds`
 
-# Install Vim plugins
-vim +PlugInstall +qall
-nvim +PlugInstall +qall
-```
+Symlinks are created by the `link_path` helper in `setup.sh`, which moves any
+pre-existing real file to `<target>.backup.<timestamp>` rather than overwriting
+it. See `CLAUDE.md` for the full target list.
 
-### Development Tools
-The setup automatically configures paths and initialization for:
-- **Node.js**: NVM for version management
-- **Python**: Miniconda with auto-activation disabled
-- **Rust**: Rustup and Cargo environment
-- **Java**: OpenJDK 21 via Homebrew
-- **LLVM**: Custom toolchain for WebAssembly compilation
-- **Git**: Custom aliases and credential management
+## Editors
 
-## Architecture Notes
+- `vim` → `.vimrc`, which sources `.common_vimrc`. Plugins (vim-surround,
+  vim-easymotion) are declared in `.vimrc` via vim-plug.
+- IntelliJ / IdeaVim → `.ideavimrc`
+- `nvim` → `lazyvim/`, symlinked to `~/.config/nvim`. **LazyVim manages its own
+  plugins; do not run `nvim +PlugInstall`.**
 
-### Environment Setup Flow
-1. OS detection (Darwin/Linux)
-2. Homebrew installation and environment configuration
-3. Shell installation and default shell setting
-4. Development tool installation (vim-plug, NVM, Rust, Miniconda, AWS CLI)
-5. Symbolic link creation for all configuration files
-6. Plugin installation for editors
+## Environment management
 
-### Path Management
-The `.commonrc` includes sophisticated PATH deduplication to handle multiple tool installations without conflicts. Tools are loaded conditionally based on their presence.
+Node via nvm, Python via uv and Miniconda (base auto-activation disabled), Rust
+via rustup, JDK 21 and LLVM via Homebrew (macOS). Each tool is loaded
+conditionally in `.tools` only when present.
 
-### Shell Integration
-- **Zsh**: Uses oh-my-zsh with robbyrussell theme, git plugin, and fzf integration
-- **Warp Integration**: Includes Warpify initialization and proper shell hooks
-- **Navigation**: zoxide for smart directory jumping
+## Multi-platform notes
 
-### Multi-Platform Support
-Scripts detect and handle differences between:
-- **macOS**: Uses `/opt/homebrew` and system-specific installations
-- **Linux**: Uses Linuxbrew with appropriate path configurations
-
-## Application Management
-
-The `brew-apps.txt` file contains curated applications split into categories:
-- Terminal tools (nvim, fzf, tree, tldr)
-- System utilities (raycast, keka, stats)
-- Development tools (kubectl, helm, docker alternatives)
-- Language tools (ruff, uv for Python)
-
-Commented entries (prefixed with #) are optional applications.
-
-## Editor Plugins and Configuration
-
-### Vim/Neovim Setup
-- Leader key mapped to comma (,)
-- System clipboard integration
-- EasyMotion for navigation
-- Surround plugin for text manipulation
-- 4-space indentation with smart indenting
-- Desert colorscheme with syntax highlighting
-
-### Git Configuration
-- Custom log aliases (lg1, lg2, adog) for better commit visualization
-- Git LFS support
-- Credential manager integration
-- Default branch set to 'main'
+- macOS: `/opt/homebrew`; Linux/WSL2: Linuxbrew at `/home/linuxbrew/.linuxbrew`
+- Use `$IS_MACOS` / `$IS_LINUX` / `$IS_WSL` from `.commonrc` rather than
+  re-detecting `uname`
+- Never add absolute `/Users/<name>` paths; WSL2 support is a stated goal of
+  this repo

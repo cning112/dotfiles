@@ -1,0 +1,5 @@
+# Intentionally rule-free.
+#
+# This is symlinked to ~/.editorconfig so editors stop searching upward.
+# Do not add rules here: a global ~/.editorconfig applies to every project that
+# does not ship its own, which is exactly the surprise this file should not cause.

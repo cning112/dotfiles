@@ -20,19 +20,29 @@ Shell and tool configuration for macOS and WSL2 (Ubuntu). All dotfiles are manag
 ./install_brew_apps.sh brew-apps-macos.txt  # macOS-only cask apps
 ```
 
-`test.sh` checks symlinks, required CLI tools, shell config syntax, fzf/zoxide/git/zellij config, and WSL2-specific tools. Run it after any change to verify nothing is broken.
+`test.sh` checks symlinks, required CLI tools, shell config syntax, fzf/zoxide/git/zellij config, PATH hygiene, the history-analyzer test suite, and WSL2-specific tools. Run it after any change to verify nothing is broken. There is no CI, so `test.sh` is the only automated gate.
 
 ## Architecture
 
 **Shell config loading order** (both zsh and bash source `.commonrc`):
-1. `.commonrc` — OS detection (`$IS_MACOS`, `$IS_LINUX`, `$IS_WSL`), then sources `.tools`, `.aliases`, `.functions`; sets PATH, FZF env vars, RIPGREP_CONFIG_PATH
-2. `.tools` — initialises nvm, rustup, conda, zoxide (`eval "$(zoxide init zsh)"`), direnv
+1. `.commonrc` — OS detection (`$IS_MACOS`, `$IS_LINUX`, `$IS_WSL`); sources `.env.local` if present, then `.tools`, `.aliases`, `.functions`; sets PATH, FZF env vars, RIPGREP_CONFIG_PATH, fzf key bindings, and finishes by deduplicating `$PATH` (keeping the first occurrence)
+2. `.tools` — initialises nvm, rustup, conda, Homebrew, zoxide, direnv, atuin, warpify
 3. `.aliases` — command aliases, bat/cat override, git shortcuts, platform-aware `o` alias
-4. `.functions` — shell functions: `mkcd`, `fcd`, `fkill`, `fenv`, `fshow`, `port`, `extract`
+4. `.functions` — `mkcd`, `fkill`, `fenv`, `fcd`, `fshow`, `port`, `extract`, `y`, `frg`, `gco`, `fopen`, `fo`, `fstash`, `fssh`, `_cli_tip`, `hist-analyze`, `ccds`
 
-**Symlink targets**: `setup.sh` creates symlinks for `.zshrc`, `.bashrc`, `.bash_profile`, `.commonrc`, `.aliases`, `.functions`, `.tools`, `.gitconfig`, `.gitignore`, `.vimrc`, `.ideavimrc`, `.editorconfig`, `.ripgreprc`, `bat/config`, `starship.toml`, `zellij/config.kdl`.
+**Symlink targets**: `setup.sh` creates symlinks for `.zshrc`, `.bashrc`, `.bash_profile`, `.commonrc`, `.aliases`, `.functions`, `.tools`, `.gitconfig`, `.vimrc`, `.ideavimrc`, `.editorconfig`, `.ripgreprc`, `bat/config`, `starship.toml`, `zellij/config.kdl`, `atuin/config.toml`, `ghostty/config`, `git/ignore` (→ `~/.config/git/ignore`), `claude/CLAUDE.md` and `claude/RTK.md` (→ `~/.claude/`), and `lazyvim/` (→ `~/.config/nvim`). All linking goes through the `link_path` helper, which moves any pre-existing real file to `<target>.backup.<timestamp>` instead of overwriting it.
 
-**`lazyvim/`** — LazyVim Neovim config (separate from the vim-plug `.vimrc`). Not symlinked by `setup.sh`; intended to be copied/linked to `~/.config/nvim/` manually.
+**`git/ignore`** is the global git ignore. Git does not read `~/.gitignore` unless `core.excludesFile` points at it, which is why this file is linked to `~/.config/git/ignore`.
+
+**`lazyvim/`** — LazyVim Neovim config (separate from the vim-plug `.vimrc`), symlinked to `~/.config/nvim` by `setup.sh`.
+
+**`scripts/hist_analyze.py`** — the `hist-analyze` command. PEP 723 inline deps, run via `uv run --script`; behaviour tests in `tests/test_hist_analyze.py`, executed by `test.sh`.
+
+## Editing conventions
+
+- Anything that adds to `$PATH` **after** `.commonrc` (e.g. in `.zshrc`) must be duplicate-guarded, because the dedupe has already run by then. Follow the `case ":$PATH:" in *":$dir:"*) ;; *) ... ;; esac` pattern.
+- Never hardcode `/Users/<name>` paths; use `$HOME` and gate machine-specific tools behind `$IS_MACOS`/`$IS_LINUX`.
+- Shell functions must work in both zsh and bash. Note that zsh arrays are 1-based and bash arrays 0-based, and bash reads zero-padded numbers (`date +%j`) as octal — use `10#` to force base 10.
 
 ## Platform detection
 
@@ -40,7 +50,7 @@ Scripts use `$IS_MACOS`, `$IS_LINUX`, `$IS_WSL` booleans (set in `.commonrc`) fo
 
 ## Tool conventions
 
-- **fzf functions** (`fcd`, `fkill`, etc.) are preferred over keybindings — keybindings were removed as unreliable
+- **fzf** functions (`fcd`, `fkill`, etc.) are the primary interface. Ctrl+R / Ctrl+T / Alt+C key bindings are also enabled via `eval "$(fzf --zsh)"` in `.commonrc`, which overrides the zsh defaults.
 - **bat** replaces `cat` and `less` via aliases when installed
 - **zoxide** provides `z` and `zi`; `cd` is intentionally kept separate
 - **git-delta** is installed as `delta` (Homebrew binary name); aliased as `git-delta`
