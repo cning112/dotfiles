@@ -237,6 +237,17 @@ else
         [0-9]*.[0-9]*.[0-9]*) ok "nvm loads and works on first use (v$nvm_version)" ;;
         *) fail "nvm did not load when invoked (got '${nvm_version:-}')" ;;
     esac
+
+    # nvm's default version must win over any other node on PATH (Homebrew ships
+    # node/npm/npx too, and .tools orders its PATH prepends so that nvm is last).
+    nvm_node=$(env -u NVM_BIN -u NVM_PATH -u NVM_INC zsh -i -c \
+        'printf "\n__NVM__%s\n" "$(command -v node)"' 2>/dev/null |
+        sed -n 's/^__NVM__//p')
+    case "$nvm_node" in
+        "") info "node not on PATH, skipping precedence check" ;;
+        "$HOME/.nvm/"*) ok "nvm's node wins on \$PATH ($nvm_node)" ;;
+        *) fail "node resolves to $nvm_node; expected nvm's version to take priority" ;;
+    esac
 fi
 
 # --------------------------------------------------------

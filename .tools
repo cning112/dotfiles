@@ -1,29 +1,3 @@
-# NVM (lazy)
-# Sourcing nvm.sh costs ~0.35s on every shell start: it is ~4.5k lines and runs
-# its own "use default" while loading. Define a stub instead and load the real
-# thing on first use. Nothing is added to PATH here, so node/npm/npx keep
-# resolving to exactly the same binary as before.
-export NVM_DIR="$HOME/.nvm"
-if [ -d "$NVM_DIR" ]; then
-    nvm() {
-        unset -f nvm
-        # shellcheck source=/dev/null
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-        # `command -v` is the portable test here: zsh's `type -t` prints nothing
-        # for functions, so it cannot be used to confirm the load succeeded.
-        if command -v nvm >/dev/null 2>&1; then
-            nvm "$@"
-        else
-            printf 'nvm: could not load %s/nvm.sh\n' "$NVM_DIR" >&2
-            return 1
-        fi
-    }
-
-    # Completion is only ~100 lines and ships proper zsh support (bashcompinit),
-    # so it stays eager; completing `nvm` is what triggers the stub.
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-fi
-
 # Rust & Cargo
 if [ -s "$HOME/.cargo/env" ]; then
     source "$HOME/.cargo/env"
@@ -49,6 +23,49 @@ if [ -d "/opt/homebrew/bin" ]; then
 elif [ -d "/home/linuxbrew/.linuxbrew/bin" ]; then
     export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
     export HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
+fi
+
+# NVM (lazy) — deliberately after Homebrew. Homebrew also ships node/npm/npx, so
+# nvm's version has to be prepended later to take priority.
+#
+# Sourcing nvm.sh costs ~0.35s on every shell start: it is ~4.5k lines and runs
+# its own "use default" while loading. Define a stub instead and load the real
+# thing on first use.
+export NVM_DIR="$HOME/.nvm"
+if [ -d "$NVM_DIR" ]; then
+    nvm() {
+        unset -f nvm
+        # shellcheck source=/dev/null
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        # `command -v` is the portable test here: zsh's `type -t` prints nothing
+        # for functions, so it cannot be used to confirm the load succeeded.
+        if command -v nvm >/dev/null 2>&1; then
+            nvm "$@"
+        else
+            printf 'nvm: could not load %s/nvm.sh\n' "$NVM_DIR" >&2
+            return 1
+        fi
+    }
+
+    # Completion is only ~100 lines and ships proper zsh support (bashcompinit),
+    # so it stays eager; completing `nvm` is what triggers the stub.
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+    # Expose the default version without loading nvm.sh, by resolving
+    # $NVM_DIR/alias/default ourselves. Falls back to the newest installed
+    # version when the alias needs nvm to resolve it (lts/*, node, ...).
+    nvm_alias="$(cat "$NVM_DIR/alias/default" 2>/dev/null || true)"
+    nvm_bin=""
+    case "$nvm_alias" in
+        v[0-9]* | [0-9]*) nvm_bin="$NVM_DIR/versions/node/v${nvm_alias#v}/bin" ;;
+    esac
+    if [ ! -d "$nvm_bin" ]; then
+        nvm_bin="$(ls -d "$NVM_DIR"/versions/node/*/bin 2>/dev/null | sort -V | tail -1)"
+    fi
+    if [ -n "$nvm_bin" ] && [ -d "$nvm_bin" ]; then
+        export PATH="$nvm_bin:$PATH"
+    fi
+    unset nvm_alias nvm_bin
 fi
 
 # direnv: per-directory environment variables (.envrc files)
