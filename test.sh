@@ -34,7 +34,7 @@ section "Symlinks in \$HOME"
 SYMLINKS=(
     .zshrc .bashrc .bash_profile
     .commonrc .aliases .functions .tools
-    .gitconfig .gitignore
+    .gitconfig
     .vimrc .ideavimrc .editorconfig .common_vimrc
     .ripgreprc
 )
@@ -120,10 +120,26 @@ else
     info "~/.config/atuin/config.toml not symlinked (run setup.sh)"
 fi
 
+# Git reads ~/.config/git/ignore by default; ~/.gitignore is not read unless
+# core.excludesFile points at it, so this is the location that matters.
+if [ -L "$HOME/.config/git/ignore" ]; then
+    ok "~/.config/git/ignore symlinked (global git ignore)"
+else
+    info "~/.config/git/ignore not symlinked (run setup.sh)"
+fi
+
+for f in CLAUDE.md RTK.md; do
+    if [ -L "$HOME/.claude/$f" ]; then
+        ok "~/.claude/$f symlinked"
+    else
+        info "~/.claude/$f not symlinked (run setup.sh)"
+    fi
+done
+
 # --------------------------------------------------------
 section "Shell config syntax check"
 # --------------------------------------------------------
-for f in .commonrc .aliases .functions .tools; do
+for f in .commonrc .aliases .functions .tools .bashrc .bash_profile; do
     if bash -n "$SCRIPT_DIR/$f" 2>/dev/null; then
         ok "$f syntax OK"
     else
@@ -141,11 +157,23 @@ fi
 # --------------------------------------------------------
 section "History analyzer"
 # --------------------------------------------------------
-if uv run --script tests/test_hist_analyze.py >/dev/null 2>&1; then
+if ! command -v uv &>/dev/null; then
+    fail "uv not found (needed to run hist-analyze and its tests)"
+elif uv run --script "$SCRIPT_DIR/tests/test_hist_analyze.py" >/dev/null 2>&1; then
     ok "hist-analyze behavior tests pass"
 else
-    fail "hist-analyze behavior tests failed"
-    uv run --script tests/test_hist_analyze.py
+    # An unwritable/read-only uv cache fails before the tests even start, so retry
+    # once with a throwaway cache instead of reporting an environment problem as a
+    # test failure.
+    cache_dir=$(mktemp -d)
+    if UV_CACHE_DIR="$cache_dir" uv run --script "$SCRIPT_DIR/tests/test_hist_analyze.py" >/dev/null 2>&1; then
+        ok "hist-analyze behavior tests pass"
+        info "default uv cache was not usable; a temporary cache was used"
+    else
+        fail "hist-analyze behavior tests failed"
+        UV_CACHE_DIR="$cache_dir" uv run --script "$SCRIPT_DIR/tests/test_hist_analyze.py"
+    fi
+    rm -rf "$cache_dir"
 fi
 
 if command -v atuin &>/dev/null; then
@@ -196,6 +224,11 @@ section "zellij"
 if command -v zellij &>/dev/null; then
     ok "zellij installed: $(zellij --version)"
     [ -L "$HOME/.config/zellij/config.kdl" ] && ok "~/.config/zellij/config.kdl symlinked" || fail "~/.config/zellij/config.kdl not symlinked"
+    if zellij setup --check 2>&1 | grep -qi "well defined"; then
+        ok "zellij config.kdl parses"
+    else
+        info "could not confirm zellij config.kdl parses"
+    fi
 else
     info "zellij not installed"
 fi
@@ -209,6 +242,29 @@ if $IS_WSL; then
 else
     info "Not WSL2, skipping WSL2 checks"
 fi
+
+# --------------------------------------------------------
+section "PATH hygiene"
+# --------------------------------------------------------
+# A fresh interactive shell, not this script's inherited $PATH: .commonrc
+# deduplicates, but .zshrc/.bashrc add entries afterwards, so this catches
+# regressions where those additions are no longer duplicate-guarded.
+path_dupes_for() {
+    local shell_name="$1"
+    command -v "$shell_name" &>/dev/null || return 0
+    "$shell_name" -i -c 'printf "\n__PATH__%s\n" "$PATH"' 2>/dev/null |
+        sed -n 's/^__PATH__//p' | tr ':' '\n' | sort | uniq -d
+}
+
+for shell_name in zsh bash; do
+    command -v "$shell_name" &>/dev/null || continue
+    dupes=$(path_dupes_for "$shell_name")
+    if [ -z "$dupes" ]; then
+        ok "no duplicate \$PATH entries in $shell_name"
+    else
+        fail "duplicate \$PATH entries in $shell_name: $(printf '%s' "$dupes" | tr '\n' ' ')"
+    fi
+done
 
 # --------------------------------------------------------
 echo ""
