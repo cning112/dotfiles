@@ -1,0 +1,20 @@
+# Global git ignore, symlinked to ~/.config/git/ignore by setup.sh.
+#
+# Git reads ~/.config/git/ignore by default (XDG) when core.excludesFile is
+# unset. It does NOT read ~/.gitignore, which is why this file lives here.
+
+# Claude Code local, machine-specific settings
+**/.claude/settings.local.json
+
+# Editor / OS noise
+.DS_Store
+.idea/
+
+# Dependencies and local secrets
+node_modules/
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+.ruff_cache/
