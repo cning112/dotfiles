@@ -26,7 +26,7 @@ Shell and tool configuration for macOS and WSL2 (Ubuntu). All dotfiles are manag
 
 **Shell config loading order** (both zsh and bash source `.commonrc`):
 1. `.commonrc` — OS detection (`$IS_MACOS`, `$IS_LINUX`, `$IS_WSL`); sources `.env.local` if present, then `.tools`, `.aliases`, `.functions`; sets PATH, FZF env vars, RIPGREP_CONFIG_PATH, fzf key bindings, and finishes by deduplicating `$PATH` (keeping the first occurrence)
-2. `.tools` — initialises nvm, rustup, conda, Homebrew, zoxide, direnv, atuin, warpify
+2. `.tools` — nvm, rustup, conda, Homebrew, zoxide, direnv, atuin, warpify. nvm is **lazy**: a `nvm` stub loads `nvm.sh` on first use, because sourcing it eagerly costs ~0.35s of every shell start.
 3. `.aliases` — command aliases, bat/cat override, git shortcuts, platform-aware `o` alias
 4. `.functions` — `mkcd`, `fkill`, `fenv`, `fcd`, `fshow`, `port`, `extract`, `y`, `frg`, `gco`, `fopen`, `fo`, `fstash`, `fssh`, `_cli_tip`, `hist-analyze`, `ccds`
 
@@ -42,7 +42,8 @@ Shell and tool configuration for macOS and WSL2 (Ubuntu). All dotfiles are manag
 
 - Anything that adds to `$PATH` **after** `.commonrc` (e.g. in `.zshrc`) must be duplicate-guarded, because the dedupe has already run by then. Follow the `case ":$PATH:" in *":$dir:"*) ;; *) ... ;; esac` pattern.
 - Never hardcode `/Users/<name>` paths; use `$HOME` and gate machine-specific tools behind `$IS_MACOS`/`$IS_LINUX`.
-- Shell functions must work in both zsh and bash. Note that zsh arrays are 1-based and bash arrays 0-based, and bash reads zero-padded numbers (`date +%j`) as octal — use `10#` to force base 10.
+- Shell functions must work in both zsh and bash. Note that zsh arrays are 1-based and bash arrays 0-based, and bash reads zero-padded numbers (`date +%j`) as octal — use `10#` to force base 10. Also note zsh's `type -t` prints nothing for functions; use `command -v` to test whether a function exists.
+- Keep heavy tool initialisation lazy (see the `nvm` stub in `.tools`). Measure with `zsh -i -c exit` before and after rather than guessing.
 
 ## Platform detection
 

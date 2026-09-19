@@ -81,7 +81,7 @@ dotfiles/
 ├── .bash_profile      # Bash login shell
 ├── .aliases           # Command aliases
 ├── .functions         # Shell functions
-├── .tools             # Tool initialisation (nvm, rust, conda, homebrew, zoxide, direnv, atuin)
+├── .tools             # Tool init (nvm [lazy], rust, conda, homebrew, zoxide, direnv, atuin)
 ├── .gitconfig         # Git config with delta pager
 ├── .vimrc             # Portable Vim config shared with Vim/IdeaVim-style editors
 ├── .common_vimrc      # Shared Vim options sourced by .vimrc and .ideavimrc

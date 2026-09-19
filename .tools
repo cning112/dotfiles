@@ -1,7 +1,26 @@
-# NVM
-if [ -d "$HOME/.nvm" ]; then
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# NVM (lazy)
+# Sourcing nvm.sh costs ~0.35s on every shell start: it is ~4.5k lines and runs
+# its own "use default" while loading. Define a stub instead and load the real
+# thing on first use. Nothing is added to PATH here, so node/npm/npx keep
+# resolving to exactly the same binary as before.
+export NVM_DIR="$HOME/.nvm"
+if [ -d "$NVM_DIR" ]; then
+    nvm() {
+        unset -f nvm
+        # shellcheck source=/dev/null
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        # `command -v` is the portable test here: zsh's `type -t` prints nothing
+        # for functions, so it cannot be used to confirm the load succeeded.
+        if command -v nvm >/dev/null 2>&1; then
+            nvm "$@"
+        else
+            printf 'nvm: could not load %s/nvm.sh\n' "$NVM_DIR" >&2
+            return 1
+        fi
+    }
+
+    # Completion is only ~100 lines and ships proper zsh support (bashcompinit),
+    # so it stays eager; completing `nvm` is what triggers the stub.
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 fi
 

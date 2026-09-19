@@ -204,6 +204,42 @@ else
 fi
 
 # --------------------------------------------------------
+section "Node / nvm"
+# --------------------------------------------------------
+if [ ! -d "$HOME/.nvm" ]; then
+    info "nvm not installed, skipping nvm checks"
+elif ! command -v zsh &>/dev/null; then
+    info "zsh not available, skipping nvm checks"
+else
+    # nvm.sh defines many helper functions (nvm_echo, nvm_has, ...), so their
+    # presence means nvm.sh was sourced at startup. NVM_BIN is NOT a reliable
+    # signal: nvm's own "use default" step is skipped when npm_config_prefix is
+    # set, so NVM_BIN stays unset even when nvm.sh did load.
+    nvm_probe=$(env -u NVM_BIN -u NVM_PATH -u NVM_INC zsh -i -c \
+        'printf "\n__NVM__%s|%s\n" "$(command -v nvm_echo)" "$(command -v nvm)"' 2>/dev/null |
+        sed -n 's/^__NVM__//p')
+    nvm_sourced=${nvm_probe%%|*}
+    nvm_startup_cmd=${nvm_probe##*|}
+
+    if [ -z "$nvm_startup_cmd" ]; then
+        fail "nvm command not available in a new shell"
+    elif [ -n "$nvm_sourced" ]; then
+        fail "nvm.sh is sourced at startup; it costs ~0.35s per shell — expected lazy loading"
+    else
+        ok "nvm is lazy-loaded (nvm.sh not sourced at startup)"
+    fi
+
+    # Assert on the version: this proves the stub loaded the real nvm on demand.
+    nvm_version=$(env -u NVM_BIN -u NVM_PATH -u NVM_INC zsh -i -c \
+        'printf "\n__NVM__%s\n" "$(nvm --version 2>/dev/null)"' 2>/dev/null |
+        sed -n 's/^__NVM__//p')
+    case "$nvm_version" in
+        [0-9]*.[0-9]*.[0-9]*) ok "nvm loads and works on first use (v$nvm_version)" ;;
+        *) fail "nvm did not load when invoked (got '${nvm_version:-}')" ;;
+    esac
+fi
+
+# --------------------------------------------------------
 section "Git config"
 # --------------------------------------------------------
 git_email=$(git config --global user.email 2>/dev/null)
