@@ -18,6 +18,30 @@ setup_shells() {
     source "${SCRIPT_DIR}/setup_shells.sh"
 }
 
+# link_path <source> <target>
+# Symlink a repo file or directory into $HOME. Anything already at <target> that
+# is not already our symlink is moved aside first, so re-running setup.sh on a
+# machine that already has real dotfiles cannot silently destroy them.
+link_path() {
+    local source="$1"
+    local target="$2"
+    local backup_path
+
+    if [ -L "$target" ]; then
+        if [ "$(readlink "$target")" = "$source" ]; then
+            return 0
+        fi
+        rm -f "$target"
+    elif [ -e "$target" ]; then
+        backup_path="${target}.backup.$(date +%Y%m%d%H%M%S)"
+        echo "Backing up existing $target to $backup_path"
+        mv "$target" "$backup_path"
+    fi
+
+    mkdir -p "$(dirname "$target")"
+    ln -s "$source" "$target"
+}
+
 # 安装必要的软件
 install_software() {
     echo "Installing brew apps from brew-apps.txt..."
@@ -52,13 +76,17 @@ install_software() {
 
     if [ ! -d "$HOME/miniconda3" ] || [ -z "$(ls -A "$HOME/miniconda3")" ]; then
         echo "Installing Miniconda..."
-        mkdir -p $HOME/miniconda3
+        mkdir -p "$HOME/miniconda3"
+        # Anaconda names the macOS builds "arm64" but the Linux builds "aarch64".
+        ARCH=$(uname -m)
         if [ "$OS_TYPE" = "Darwin" ]; then
-            ARCH=$(uname -m)  # arm64 or x86_64
-            curl -o "$HOME/miniconda.sh" "https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-${ARCH}.sh"
+            [ "$ARCH" = "x86_64" ] || ARCH="arm64"
+            MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-${ARCH}.sh"
         elif [ "$OS_TYPE" = "Linux" ]; then
-            curl -o "$HOME/miniconda.sh" -sS https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+            [ "$ARCH" = "x86_64" ] || ARCH="aarch64"
+            MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-${ARCH}.sh"
         fi
+        curl -fLo "$HOME/miniconda.sh" "$MINICONDA_URL"
         bash "$HOME/miniconda.sh" -b -u -p "$HOME/miniconda3"
         if [ $? -ne 0 ]; then
             echo "Miniconda installation failed."
@@ -74,11 +102,14 @@ install_software() {
     if ! command -v aws &> /dev/null 2>&1; then
         echo "Installing AWS CLI..."
         if [ "$OS_TYPE" = "Darwin" ]; then
-            curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+            curl -fLo "AWSCLIV2.pkg" "https://awscli.amazonaws.com/AWSCLIV2.pkg"
             sudo installer -pkg "AWSCLIV2.pkg" -target /
             rm "AWSCLIV2.pkg"
         elif [ "$OS_TYPE" = "Linux" ]; then
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            # Linux builds are published as x86_64 or aarch64.
+            AWS_ARCH=$(uname -m)
+            [ "$AWS_ARCH" = "x86_64" ] || AWS_ARCH="aarch64"
+            curl -fLo "awscliv2.zip" "https://awscli.amazonaws.com/awscli-exe-linux-${AWS_ARCH}.zip"
             unzip awscliv2.zip
             sudo ./aws/install
             rm -rf awscliv2.zip aws
@@ -88,44 +119,41 @@ install_software() {
     fi
 
     echo "Creating necessary directories..."
+    mkdir -p "$HOME/.config"
     mkdir -p "$HOME/.config/bat"
     mkdir -p "$HOME/.config/ghostty"
     mkdir -p "$HOME/.config/zellij"
     mkdir -p "$HOME/.config/atuin"
-    mkdir -p "$HOME/.config"
+    mkdir -p "$HOME/.config/git"
     mkdir -p "$HOME/.claude"
 
-    # Neovim uses the LazyVim config in this repo. Back up any existing config
-    # directory so we do not leave both init.lua and init.vim in place.
-    if [ -e "$HOME/.config/nvim" ] && [ ! -L "$HOME/.config/nvim" ]; then
-        backup_path="$HOME/.config/nvim.backup.$(date +%Y%m%d%H%M%S)"
-        echo "Backing up existing Neovim config to $backup_path"
-        mv "$HOME/.config/nvim" "$backup_path"
-    fi
-
     echo "Creating symbolic links..."
-    ln -sf "$SCRIPT_DIR/.vimrc" "$HOME/.vimrc"
-    ln -sfn "$SCRIPT_DIR/lazyvim" "$HOME/.config/nvim"
-    ln -sf "$SCRIPT_DIR/.zshrc" "$HOME/.zshrc"
-    ln -sf "$SCRIPT_DIR/.gitconfig" "$HOME/.gitconfig"
-    ln -sf "$SCRIPT_DIR/.gitignore" "$HOME/.gitignore"
-    ln -sf "$SCRIPT_DIR/.bash_profile" "$HOME/.bash_profile"
-    ln -sf "$SCRIPT_DIR/.bashrc" "$HOME/.bashrc"
-    ln -sf "$SCRIPT_DIR/.commonrc" "$HOME/.commonrc"
-    ln -sf "$SCRIPT_DIR/.common_vimrc" "$HOME/.common_vimrc"
-    ln -sf "$SCRIPT_DIR/zellij/config.kdl" "$HOME/.config/zellij/config.kdl"
-    ln -sf "$SCRIPT_DIR/.editorconfig" "$HOME/.editorconfig"
-    ln -sf "$SCRIPT_DIR/.ideavimrc" "$HOME/.ideavimrc"
-    ln -sf "$SCRIPT_DIR/.aliases" "$HOME/.aliases"
-    ln -sf "$SCRIPT_DIR/.functions" "$HOME/.functions"
-    ln -sf "$SCRIPT_DIR/.tools" "$HOME/.tools"
-    ln -sf "$SCRIPT_DIR/.ripgreprc" "$HOME/.ripgreprc"
-    ln -sf "$SCRIPT_DIR/bat/config" "$HOME/.config/bat/config"
-    ln -sf "$SCRIPT_DIR/starship.toml" "$HOME/.config/starship.toml"
-    ln -sf "$SCRIPT_DIR/ghostty/config" "$HOME/.config/ghostty/config"
-    ln -sf "$SCRIPT_DIR/atuin/config.toml" "$HOME/.config/atuin/config.toml"
-    ln -sf "$SCRIPT_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
-    ln -sf "$SCRIPT_DIR/claude/RTK.md" "$HOME/.claude/RTK.md"
+    # Neovim uses the LazyVim config in this repo. link_path backs up any
+    # existing ~/.config/nvim so we do not end up with both init.lua and init.vim.
+    link_path "$SCRIPT_DIR/.vimrc" "$HOME/.vimrc"
+    link_path "$SCRIPT_DIR/lazyvim" "$HOME/.config/nvim"
+    link_path "$SCRIPT_DIR/.zshrc" "$HOME/.zshrc"
+    link_path "$SCRIPT_DIR/.gitconfig" "$HOME/.gitconfig"
+    link_path "$SCRIPT_DIR/.bash_profile" "$HOME/.bash_profile"
+    link_path "$SCRIPT_DIR/.bashrc" "$HOME/.bashrc"
+    link_path "$SCRIPT_DIR/.commonrc" "$HOME/.commonrc"
+    link_path "$SCRIPT_DIR/.common_vimrc" "$HOME/.common_vimrc"
+    link_path "$SCRIPT_DIR/zellij/config.kdl" "$HOME/.config/zellij/config.kdl"
+    link_path "$SCRIPT_DIR/.editorconfig" "$HOME/.editorconfig"
+    link_path "$SCRIPT_DIR/.ideavimrc" "$HOME/.ideavimrc"
+    link_path "$SCRIPT_DIR/.aliases" "$HOME/.aliases"
+    link_path "$SCRIPT_DIR/.functions" "$HOME/.functions"
+    link_path "$SCRIPT_DIR/.tools" "$HOME/.tools"
+    link_path "$SCRIPT_DIR/.ripgreprc" "$HOME/.ripgreprc"
+    link_path "$SCRIPT_DIR/bat/config" "$HOME/.config/bat/config"
+    link_path "$SCRIPT_DIR/starship.toml" "$HOME/.config/starship.toml"
+    link_path "$SCRIPT_DIR/ghostty/config" "$HOME/.config/ghostty/config"
+    link_path "$SCRIPT_DIR/atuin/config.toml" "$HOME/.config/atuin/config.toml"
+    # Global git ignore. Git reads this path by default; ~/.gitignore is NOT read
+    # by git unless core.excludesFile points at it, so we link the real location.
+    link_path "$SCRIPT_DIR/git/ignore" "$HOME/.config/git/ignore"
+    link_path "$SCRIPT_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+    link_path "$SCRIPT_DIR/claude/RTK.md" "$HOME/.claude/RTK.md"
 
     if command -v atuin &>/dev/null && [ -s "$HOME/.zsh_history" ]; then
         echo "Existing zsh history detected. Import it once for useful analysis:"
