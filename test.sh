@@ -137,6 +137,39 @@ for f in CLAUDE.md RTK.md; do
 done
 
 # --------------------------------------------------------
+section "AI config sync"
+# --------------------------------------------------------
+if command -v node &>/dev/null; then
+    ai_sync_json=$(node "$SCRIPT_DIR/scripts/ai-sync.mjs" status --json 2>/dev/null)
+    ai_sync_rc=$?
+    case "$ai_sync_rc" in
+        0)
+            ok "AI config sync in sync"
+            ;;
+        2)
+            info "AI config sync not applied on this machine yet"
+            ;;
+        *)
+            drift_ids=$(printf '%s' "$ai_sync_json" | node -e '
+                let d = "";
+                process.stdin.on("data", (c) => (d += c)).on("end", () => {
+                    try {
+                        const j = JSON.parse(d);
+                        const bad = (j.entries || []).filter((e) => !e.ok).map((e) => e.id).join(", ");
+                        console.log(bad || "unknown");
+                    } catch {
+                        console.log("unknown");
+                    }
+                });
+            ' 2>/dev/null)
+            fail "AI config sync drift detected: ${drift_ids:-unknown}"
+            ;;
+    esac
+else
+    info "node not installed, skipping AI config sync check"
+fi
+
+# --------------------------------------------------------
 section "Shell config syntax check"
 # --------------------------------------------------------
 for f in .commonrc .aliases .functions .tools .bashrc .bash_profile; do

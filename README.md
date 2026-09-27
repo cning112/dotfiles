@@ -71,6 +71,31 @@ sudo apt install wslu
 
 ---
 
+## AI tool configs (Claude Code · Codex · OpenCode · dsh)
+
+Claude Code, Codex, OpenCode, and dsh (DeepSeek Harness) configs sync across machines from this repo via `scripts/ai-sync.mjs`. The engine **links** read-mostly files and directories, **mirrors** files the apps rewrite, and **renders** generated files such as `~/.codex/AGENTS.md`. The full mapping, modes, and platform caveats live in [`docs/ai-config-sync.md`](docs/ai-config-sync.md).
+
+```bash
+node scripts/ai-sync.mjs apply    # repo → this machine (backs up anything it replaces)
+node scripts/ai-sync.mjs pull     # machine → repo (mirrored files only)
+node scripts/ai-sync.mjs status   # verify sync state (no writes)
+```
+
+**Secrets policy:** no secrets are ever committed — each tool logs in per device. Copy `env.example` to `~/.env.local` on macOS/WSL2 (already sourced by `.commonrc`); on Windows set the same names as user environment variables (`[Environment]::SetEnvironmentVariable('NAME','…','User')`, then restart the shell).
+
+### Native Windows quickstart
+
+Prereqs: [Git for Windows](https://git-scm.com/download/win) (also supplies Claude Code's Bash tool/hook shell) and Node ≥ 22.
+
+```powershell
+git clone https://github.com/cning112/dotfiles; cd dotfiles
+node scripts\ai-sync.mjs apply   # link/junction/mirror configs into %USERPROFILE%
+# then install and log in to each tool (claude/codex/opencode/dsh)
+node scripts\ai-sync.mjs status  # expect exit 0
+```
+
+---
+
 ## File Structure
 
 ```
@@ -95,10 +120,17 @@ dotfiles/
 ├── atuin/config.toml  # Local-only Atuin history configuration
 ├── git/ignore         # Global git ignore, symlinked to ~/.config/git/ignore
 ├── claude/            # Global Claude Code instructions (CLAUDE.md, RTK.md)
+├── agents/            # Shared agent skills library (skills/, .skill-lock.json)
+├── codex/             # Codex config (config.toml, AGENTS.base.md, skills/)
+├── opencode/          # OpenCode config (jsonc/json files, skills/)
+├── dsh/               # DeepSeek Harness config (settings.yaml, AGENTS.md)
+├── docs/              # Design docs (ai-config-sync.md)
+├── env.example        # Example env var names (copy to ~/.env.local; no secrets)
 ├── brew-apps.txt      # Cross-platform CLI tools
 ├── brew-apps-macos.txt# macOS-only cask apps
 ├── setup.sh           # Full setup script
 ├── install_brew_apps.sh
+├── scripts/ai-sync.mjs # AI-tool config sync engine (apply/pull/status)
 ├── scripts/hist_analyze.py # Isolated command-history analyzer
 ├── tests/test_hist_analyze.py # Analyzer behavior tests
 └── test.sh            # Verify setup is working
