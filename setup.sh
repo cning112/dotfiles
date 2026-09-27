@@ -155,6 +155,13 @@ install_software() {
     link_path "$SCRIPT_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
     link_path "$SCRIPT_DIR/claude/RTK.md" "$HOME/.claude/RTK.md"
 
+    # Sync the Claude/Codex/OpenCode/dsh configs the shell setup above does not
+    # cover. The engine is idempotent and backs up anything it replaces.
+    if command -v node >/dev/null 2>&1; then
+        echo "Syncing AI tool configs..."
+        node "$SCRIPT_DIR/scripts/ai-sync.mjs" apply || echo "  ai-sync apply reported issues (see above)"
+    fi
+
     if command -v atuin &>/dev/null && [ -s "$HOME/.zsh_history" ]; then
         echo "Existing zsh history detected. Import it once for useful analysis:"
         echo "  atuin import zsh"

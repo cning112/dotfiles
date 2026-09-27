@@ -38,6 +38,8 @@ Shell and tool configuration for macOS and WSL2 (Ubuntu). All dotfiles are manag
 
 **`scripts/hist_analyze.py`** — the `hist-analyze` command. PEP 723 inline deps, run via `uv run --script`; behaviour tests in `tests/test_hist_analyze.py`, executed by `test.sh`.
 
+**`scripts/ai-sync.mjs`** — the AI-tool config sync engine (Node ≥ 22, zero deps) for Claude Code, Codex, OpenCode, and dsh. It implements three modes: LINK (symlink/junction read-mostly files and dirs), MIRROR (repo ↔ machine copies for files the apps rewrite, e.g. `claude/settings.json`), and RENDER (generated files, e.g. `~/.codex/AGENTS.md`). Design, mapping table, and platform caveats live in `docs/ai-config-sync.md`.
+
 ## Editing conventions
 
 - Anything that adds to `$PATH` **after** `.commonrc` (e.g. in `.zshrc`) must be duplicate-guarded, because the dedupe has already run by then. Follow the `case ":$PATH:" in *":$dir:"*) ;; *) ... ;; esac` pattern.
@@ -45,6 +47,7 @@ Shell and tool configuration for macOS and WSL2 (Ubuntu). All dotfiles are manag
 - Shell functions must work in both zsh and bash. Note that zsh arrays are 1-based and bash arrays 0-based, and bash reads zero-padded numbers (`date +%j`) as octal — use `10#` to force base 10. Also note zsh's `type -t` prints nothing for functions; use `command -v` to test whether a function exists.
 - Keep heavy tool initialisation lazy (see the `nvm` stub in `.tools`). Measure with `zsh -i -c exit` before and after rather than guessing — the absolute number swings with ambient load and filesystem cache, so always A/B the two states back to back.
 - npm exports its whole computed config as `npm_config_*` into every process it spawns, so a shell started via `npx`/`npm exec` inherits it. `.tools` unsets the prefix values because `npm_config_prefix` makes nvm refuse to run; other `npm_config_*` values are left alone because they may be deliberate (registry, auth).
+- When adding a new synced AI-tool config (Claude Code, Codex, OpenCode, dsh), add a mapping entry in `scripts/ai-sync.mjs` and document it in `docs/ai-config-sync.md`. Never commit symlinks or secrets — symlinks check out as plain text on Windows without Developer Mode, and credentials/machine-local files stay out of the repo (see the never-sync list in the design doc).
 
 ## Platform detection
 

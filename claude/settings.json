@@ -1,0 +1,51 @@
+{
+  "model": "opus",
+  "enabledPlugins": {
+    "everything-claude-code@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": false,
+    "ralph-skills@ralph-marketplace": true,
+    "andrej-karpathy-skills@karpathy-skills": true,
+    "code-review@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "github@claude-plugins-official": false,
+    "ralph-loop@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
+    "mattpocock-skills@claude-plugins-official": true,
+    "finance@synced": false,
+    "design@synced": false,
+    "cowork-plugin-management@synced": false
+  },
+  "extraKnownMarketplaces": {
+    "ralph-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "snarktank/ralph"
+      }
+    },
+    "karpathy-skills": {
+      "source": {
+        "source": "github",
+        "repo": "forrestchang/andrej-karpathy-skills"
+      }
+    }
+  },
+  "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-sonnet-5": {
+      "effortLevel": "medium"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
+  "tui": "fullscreen",
+  "verbose": true,
+  "remoteControlAtStartup": true,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true
+}
