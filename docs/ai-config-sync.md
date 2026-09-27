@@ -45,7 +45,7 @@ Rules:
 | 6 | `agents/.skill-lock.json` | `~/.agents/.skill-lock.json` | MIRROR | same |
 | 7 | `codex/config.toml` | `~/.codex/config.toml` | MIRROR (preserve live `[projects.*]` + `[windows]`) | same |
 | 8 | `codex/AGENTS.base.md` + `claude/RTK.md` | `~/.codex/AGENTS.md` | RENDER (concat) | same |
-| 9 | `codex/skills/**` (exclude `.system`) | `~/.codex/skills` | LINK dir | junction |
+| 9 | `codex/skills/**` (exclude `.system` — machine-managed, recreated in place, git-ignored) | `~/.codex/skills` | LINK dir | junction |
 | 10 | `codex/rules/**` (when non-empty) | `~/.codex/rules` | LINK dir | junction |
 | 11 | `opencode/{opencode.jsonc, oh-my-opencode-slim.json, dcp.jsonc, tui.json, cli.json}` | `~/.config/opencode/<file>` | LINK files | copy (file symlink if Dev Mode) |
 | 12 | `opencode/skills/**` | `~/.config/opencode/skills` | LINK dir | junction |
