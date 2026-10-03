@@ -5,7 +5,8 @@
     "oh-my-opencode-slim",
     "@tarquinen/opencode-dcp",
     "opencode-agent-memory",
-    "opencode-handoff"
+    "opencode-handoff",
+    "{env:HOME}/.hindsight/coding-agents"
   ],
   "mcp": {
     "gh_grep": {
