@@ -139,8 +139,18 @@ done
 # --------------------------------------------------------
 section "AI config sync"
 # --------------------------------------------------------
+# Prefer node (the documented runtime, and the one whose node:test runner the
+# suite was written for); fall back to bun, which brew-apps.txt installs and
+# which the engine is verified to run identically.
+AI_SYNC_RUNNER=""
 if command -v node &>/dev/null; then
-    ai_sync_json=$(node "$SCRIPT_DIR/scripts/ai-sync.mjs" status --json 2>/dev/null)
+    AI_SYNC_RUNNER="node"
+elif command -v bun &>/dev/null; then
+    AI_SYNC_RUNNER="bun"
+fi
+
+if [ -n "$AI_SYNC_RUNNER" ]; then
+    ai_sync_json=$("$AI_SYNC_RUNNER" "$SCRIPT_DIR/scripts/ai-sync.mjs" status --json 2>/dev/null)
     ai_sync_rc=$?
     case "$ai_sync_rc" in
         0)
@@ -150,7 +160,7 @@ if command -v node &>/dev/null; then
             info "AI config sync not applied on this machine yet"
             ;;
         *)
-            drift_ids=$(printf '%s' "$ai_sync_json" | node -e '
+            drift_ids=$(printf '%s' "$ai_sync_json" | "$AI_SYNC_RUNNER" -e '
                 let d = "";
                 process.stdin.on("data", (c) => (d += c)).on("end", () => {
                     try {
@@ -168,14 +178,21 @@ if command -v node &>/dev/null; then
 
     # The engine's own behaviour tests run against a throwaway copy of the repo
     # plus a fake $HOME, so they never touch this checkout or this machine.
-    if node --test "$SCRIPT_DIR/tests/test_ai_sync.mjs" >/dev/null 2>&1; then
-        ok "ai-sync behavior tests pass"
+    ai_sync_tests() {
+        if [ "$AI_SYNC_RUNNER" = "node" ]; then
+            node --test "$SCRIPT_DIR/tests/ai-sync.test.mjs"
+        else
+            bun test "$SCRIPT_DIR/tests/ai-sync.test.mjs"
+        fi
+    }
+    if ai_sync_tests >/dev/null 2>&1; then
+        ok "ai-sync behavior tests pass ($AI_SYNC_RUNNER)"
     else
-        fail "ai-sync behavior tests failed"
-        node --test "$SCRIPT_DIR/tests/test_ai_sync.mjs"
+        fail "ai-sync behavior tests failed ($AI_SYNC_RUNNER)"
+        ai_sync_tests
     fi
 else
-    info "node not installed, skipping AI config sync check"
+    info "neither node nor bun installed, skipping AI config sync check"
 fi
 
 # --------------------------------------------------------

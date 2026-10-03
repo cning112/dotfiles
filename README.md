@@ -81,11 +81,13 @@ node scripts/ai-sync.mjs pull     # machine → repo (mirrored files only)
 node scripts/ai-sync.mjs status   # verify sync state (no writes)
 ```
 
+`./setup.sh` runs `apply` for you, with `node` if present and otherwise `bun` — either runtime works (the engine is verified to produce identical output on both), so a fresh machine needs only one of them. If neither is on `PATH`, setup says so and skips the sync instead of continuing silently.
+
 **Secrets policy:** no secrets are ever committed — each tool logs in per device. Copy `env.example` to `~/.env.local` on macOS/WSL2 (already sourced by `.commonrc`); on Windows set the same names as user environment variables (`[Environment]::SetEnvironmentVariable('NAME','…','User')`, then restart the shell).
 
 ### Native Windows quickstart
 
-Prereqs: [Git for Windows](https://git-scm.com/download/win) (also supplies Claude Code's Bash tool/hook shell) and Node ≥ 22.
+Prereqs: [Git for Windows](https://git-scm.com/download/win) (also supplies Claude Code's Bash tool/hook shell) and Node ≥ 22 or bun.
 
 ```powershell
 git clone https://github.com/cning112/dotfiles; cd dotfiles

@@ -69,7 +69,9 @@ Rules:
 
 ## 4. Engine contract — `scripts/ai-sync.mjs`
 
-Node ≥ 22, zero dependencies, single file. Platform via `process.platform` (`darwin`/`linux`/`win32`).
+Node ≥ 22 or bun, zero dependencies, single file. Platform via `process.platform` (`darwin`/`linux`/`win32`).
+
+`setup.sh` prefers `node` and falls back to `bun` (both produce identical output — the engine only uses `node:fs`, `node:path`, `node:os`, `node:url` and `node:child_process`). The fallback matters on a brand-new machine, where `node` is absent — it is not in `brew-apps.txt` and nvm has no version installed yet — while `bun` has just been installed. With neither on `PATH`, `setup.sh` reports the skip loudly instead of continuing silently.
 
 ```
 node scripts/ai-sync.mjs <import|apply|pull|status> [--dry-run] [--json] [--verbose]
@@ -129,7 +131,7 @@ The 12 shared skill names (`claude/skills-enabled.txt`): caveman, design-an-inte
 
 ## 7. Windows bring-up
 
-Prereqs: Git for Windows (recommended — supplies Claude Code's Bash tool and hook shell), Node ≥ 22, PowerShell 5.1+ (built-in). Developer Mode optional (only needed for file symlinks; junctions + copies cover the rest).
+Prereqs: Git for Windows (recommended — supplies Claude Code's Bash tool and hook shell), Node ≥ 22 or bun, PowerShell 5.1+ (built-in). Developer Mode optional (only needed for file symlinks; junctions + copies cover the rest).
 
 1. `git clone git@github.com:cning112/dotfiles.git && cd dotfiles`
 2. `node scripts\ai-sync.mjs apply`
@@ -144,7 +146,7 @@ Notes:
 
 ## 8. Verification
 
-- `test.sh` gains an "AI config sync" section: run `node scripts/ai-sync.mjs status --json` when Node exists; exit 2 → INFO (not applied yet), 1 → FAIL (drift), 0 → PASS. It also runs `node --test tests/test_ai_sync.mjs`, which exercises the engine against a throwaway repo copy and a fake `$HOME` and asserts that plugin-registered hooks and machine-local Codex tables survive `apply`, never reach the repo on `pull`, and do not count as drift.
+- `test.sh` gains an "AI config sync" section: run `status --json` with whichever runtime is available (node, else bun); exit 2 → INFO (not applied yet), 1 → FAIL (drift), 0 → PASS. It also runs `tests/ai-sync.test.mjs` — via `node --test` or `bun test`, both of which accept the filename and fail correctly — which exercises the engine against a throwaway repo copy and a fake `$HOME` and asserts that plugin-registered hooks and machine-local Codex tables survive `apply`, never reach the repo on `pull`, and do not count as drift.
 - Windows: manual checklist (status clean + per-tool smoke test).
 - Empirical open items to confirm on real machines: (1) Claude settings writer vs symlink behavior on current version (could upgrade to LINK later); (2) junction-based skill discovery on Windows; (3) which OpenCode line is installed (v1 files vs v2 SQLite auth); (4) rtk availability on Windows.
 

@@ -160,9 +160,25 @@ install_software() {
 
     # Sync the Claude/Codex/OpenCode/dsh configs the shell setup above does not
     # cover. The engine is idempotent and backs up anything it replaces.
+    #
+    # Prefer node, fall back to bun. On a brand-new machine node is absent (it is
+    # not in brew-apps.txt and nvm has no version installed yet) while bun has
+    # just been installed above, so without the fallback a fresh laptop would
+    # silently sync no AI configs at all.
+    AI_SYNC_RUNNER=""
     if command -v node >/dev/null 2>&1; then
-        echo "Syncing AI tool configs..."
-        node "$SCRIPT_DIR/scripts/ai-sync.mjs" apply || echo "  ai-sync apply reported issues (see above)"
+        AI_SYNC_RUNNER="node"
+    elif command -v bun >/dev/null 2>&1; then
+        AI_SYNC_RUNNER="bun"
+    fi
+
+    if [ -n "$AI_SYNC_RUNNER" ]; then
+        echo "Syncing AI tool configs (with $AI_SYNC_RUNNER)..."
+        "$AI_SYNC_RUNNER" "$SCRIPT_DIR/scripts/ai-sync.mjs" apply ||
+            echo "  ai-sync apply reported issues (see above)"
+    else
+        echo "  Skipping AI config sync: neither node nor bun is on PATH."
+        echo "  Install one, then run: bun $SCRIPT_DIR/scripts/ai-sync.mjs apply"
     fi
 
     if command -v atuin &>/dev/null && [ -s "$HOME/.zsh_history" ]; then
