@@ -26,7 +26,7 @@ Shell and tool configuration for macOS and WSL2 (Ubuntu). All dotfiles are manag
 
 **Shell config loading order** (both zsh and bash source `.commonrc`):
 1. `.commonrc` — OS detection (`$IS_MACOS`, `$IS_LINUX`, `$IS_WSL`); sources `.env.local` if present, then `.tools`, `.aliases`, `.functions`; sets PATH, FZF env vars, RIPGREP_CONFIG_PATH, fzf key bindings, and finishes by deduplicating `$PATH` (keeping the first occurrence)
-2. `.tools` — nvm, rustup, conda, Homebrew, zoxide, direnv, atuin, warpify. nvm is **lazy** (a `nvm` stub loads `nvm.sh` on first use, because sourcing it eagerly costs ~0.35s of every shell start) but its default version *is* put on `PATH` eagerly, and the nvm block sits **after** the Homebrew block so that nvm's `node`/`npm`/`npx` win over Homebrew's.
+2. `.tools` — nvm, rustup, conda, Homebrew, bun (its global bin dir), zoxide, direnv, atuin, warpify. nvm is **lazy** (a `nvm` stub loads `nvm.sh` on first use, because sourcing it eagerly costs ~0.35s of every shell start) but its default version *is* put on `PATH` eagerly, and the nvm block sits **after** the Homebrew and bun blocks so that nvm's `node`/`npm`/`npx` win over Homebrew's.
 3. `.aliases` — command aliases, bat/cat override, git shortcuts, platform-aware `o` alias
 4. `.functions` — `mkcd`, `fkill`, `fenv`, `fcd`, `fshow`, `port`, `extract`, `y`, `frg`, `gco`, `fopen`, `fo`, `fstash`, `fssh`, `_cli_tip`, `hist-analyze`, `ccds`
 

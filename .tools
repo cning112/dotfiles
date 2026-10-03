@@ -25,6 +25,22 @@ elif [ -d "/home/linuxbrew/.linuxbrew/bin" ]; then
     export HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
 fi
 
+# Bun (JavaScript runtime / package manager). Homebrew installs the binary into
+# its own bin dir, so `bun` itself already resolves; what is missing is the
+# global install dir. `bun add -g <pkg>` links the package's binaries into
+# $BUN_INSTALL/bin (default ~/.bun/bin), and only bun's own installer would add
+# that directory to PATH — Homebrew does not.
+#
+# Placed before the nvm block on purpose: nvm's node is prepended afterwards, so
+# it still wins on PATH (see the note below). BUN_INSTALL is only defaulted, so
+# a different location set in ~/.env.local (sourced before this file) survives.
+if [ -z "$BUN_INSTALL" ]; then
+    export BUN_INSTALL="$HOME/.bun"
+fi
+if [ -d "$BUN_INSTALL/bin" ]; then
+    export PATH="$BUN_INSTALL/bin:$PATH"
+fi
+
 # NVM (lazy) — deliberately after Homebrew. Homebrew also ships node/npm/npx, so
 # nvm's version has to be prepended later to take priority.
 #

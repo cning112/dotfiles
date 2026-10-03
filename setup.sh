@@ -126,6 +126,9 @@ install_software() {
     mkdir -p "$HOME/.config/atuin"
     mkdir -p "$HOME/.config/git"
     mkdir -p "$HOME/.claude"
+    # bun's global bin dir: `bun add -g` writes here, and .tools only puts it on
+    # PATH once it exists, so create it up front to make that deterministic.
+    mkdir -p "$HOME/.bun/bin"
 
     echo "Creating symbolic links..."
     # Neovim uses the LazyVim config in this repo. link_path backs up any

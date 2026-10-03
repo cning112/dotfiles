@@ -42,6 +42,10 @@ helm
 ruff
 uv
 
+# JavaScript / TypeScript runtime, package manager, and test runner.
+# Complements node/nvm; `bun add -g` installs into ~/.bun/bin (see .tools).
+bun
+
 # Per-directory environment variables
 direnv
 

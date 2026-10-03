@@ -9,7 +9,7 @@ Shell configuration for macOS and WSL2 (Ubuntu). Managed via symlinks so changes
 - Git integration, command aliases, shell functions
 
 **Development Tools**
-- **Package managers**: Homebrew (system), uv (Python), npm/nvm (Node.js)
+- **Package managers**: Homebrew (system), uv (Python), npm/nvm (Node.js), bun (JavaScript/TypeScript)
 - **Version managers**: rustup (Rust), nvm (Node.js), Miniconda (Python)
 - **Productivity**: fzf (fuzzy finder), zoxide (smart cd), zellij (terminal multiplexer), lazygit (git UI)
 - **CLI enhancement**: bat (syntax highlight), ripgrep (fast search), git-delta (better diffs)
@@ -106,7 +106,7 @@ dotfiles/
 ├── .bash_profile      # Bash login shell
 ├── .aliases           # Command aliases
 ├── .functions         # Shell functions
-├── .tools             # Tool init (nvm [lazy, wins over brew's node], rust, conda, homebrew, zoxide, direnv, atuin)
+├── .tools             # Tool init (nvm [lazy, wins over brew's node], rust, conda, homebrew, bun, zoxide, direnv, atuin)
 ├── .gitconfig         # Git config with delta pager
 ├── .vimrc             # Portable Vim config shared with Vim/IdeaVim-style editors
 ├── .common_vimrc      # Shared Vim options sourced by .vimrc and .ideavimrc
@@ -355,6 +355,27 @@ rustup default stable     # set default channel
 ```
 
 Each tool is optimized for its ecosystem. No "magic" version switching.
+
+---
+
+### bun — JavaScript runtime & package manager
+
+Bun ships via `brew-apps.txt` as a fast complement to `node`/`nvm` (not a
+replacement), and repo tooling already relies on it — e.g. the `bun:test` suite
+in `opencode/skills/codemap`.
+
+| Command | Action |
+|---------|--------|
+| `bun run file.ts` | Run a TypeScript/JavaScript file directly |
+| `bun x <cli>` | Run a package binary, installing it if needed (like `npx`) |
+| `bun install` | Install dependencies from `package.json` |
+| `bun add <pkg>` | Add a dependency (`-d` for a dev dependency) |
+| `bun test` | Run `*.test.ts` files with the built-in test runner |
+
+Globally installed CLIs (`bun add -g <pkg>`) land in `~/.bun/bin`, which `.tools`
+puts on `$PATH` — Homebrew only installs bun's own binary, so that directory
+would otherwise be missing. Bun itself is Homebrew-managed: upgrade it with
+`brew upgrade bun` rather than `bun upgrade`.
 
 ---
 

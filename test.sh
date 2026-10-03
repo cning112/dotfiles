@@ -312,6 +312,29 @@ else
 fi
 
 # --------------------------------------------------------
+section "Bun"
+# --------------------------------------------------------
+if command -v bun &>/dev/null; then
+    ok "bun installed: $(bun --version)"
+
+    # `bun add -g` links package binaries into $BUN_INSTALL/bin (default
+    # ~/.bun/bin). Homebrew installs bun's own binary but never adds that
+    # directory to PATH, so .tools has to -- without it, globally installed bun
+    # CLIs are installed but not runnable.
+    bun_bin="${BUN_INSTALL:-$HOME/.bun}/bin"
+    if [ ! -d "$bun_bin" ]; then
+        info "$bun_bin not created yet (no global bun installs)"
+    else
+        case ":$PATH:" in
+            *":$bun_bin:"*) ok "$bun_bin is on \$PATH (bun global installs are runnable)" ;;
+            *) fail "$bun_bin exists but is not on \$PATH — bun global installs will not run" ;;
+        esac
+    fi
+else
+    info "bun not installed (run ./install_brew_apps.sh)"
+fi
+
+# --------------------------------------------------------
 section "Git config"
 # --------------------------------------------------------
 git_email=$(git config --global user.email 2>/dev/null)
