@@ -1,19 +1,20 @@
 ---
 name: polish
-description: Make recently changed code more readable without changing what it does — flatten tangled logic, cut duplication, and keep only the docstrings that earn their place.
+description: Make recently changed code more readable without changing what it does — flatten tangled logic and keep only the docstrings that earn their place.
 disable-model-invocation: true
 ---
 
 # Polish
 
 Make recently changed code easier to read, without changing what it does. Two things are in scope:
-the **structure** — tangled logic made straight — and the **prose** — docstrings and comments cut to
-what earns its place. Behaviour preservation is the contract: if output, errors, ordering, timing, or
+the **structure** — tangled logic made straight — and the **prose** — docstrings cut to what earns
+their place. Behaviour preservation is the contract: if output, errors, ordering, timing, or
 the public surface changes, it is not polish.
 
 ## 1. Establish the baseline first
 
-Run the repo's gate **before** editing — in this repo `./test.sh`, bar 0 failed — and again after.
+Run the target repo's gate **before** editing — in these dotfiles `./test.sh`, bar 0 failed — and again
+after.
 Without a green baseline you cannot claim behaviour was preserved, only assume it. Quote both runs.
 
 ## 2. Bound the scope
@@ -78,7 +79,9 @@ noise, and noise has a cost: it is read on every visit, and it drifts out of dat
 ## 6. Land it separately
 
 Polish goes in its own commit, apart from behaviour changes, so a reviewer can read it as pure
-cleanup and revert it alone. A diff that mixes the two is neither.
+cleanup and revert it alone. A diff that mixes the two is neither. If the behaviour change is still
+uncommitted, commit it first — otherwise the two cannot be separated, and say so rather than mixing
+them.
 
 ## Output
 

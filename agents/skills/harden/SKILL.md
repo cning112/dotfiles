@@ -19,13 +19,14 @@ brief, rather than restating the method here and letting the two drift apart.
 ```
 round 1: review the whole artifact  → blockers? → fix → gate green
 round 2: review the fix diff        → blockers? → fix → gate green
-   …                                → none     → polish → review the polish → done
+   …                                → none     → polish, then review it → done
 ```
 
 Round 1 reviews the **uncommitted working tree**. If it already returns ACCEPT, there is nothing to
-fix — go straight to step 6. Before each fix, record a fixed point to diff the next round against (a
-commit, or a saved `git diff` if you would rather not commit mid-loop); it doubles as the revert point
-for a fix that makes things worse.
+fix — go straight to step 6. Before each fix, **commit** the fixed point the next round diffs against:
+a saved patch is not a usable base, because the next `git diff` returns the cumulative delta rather
+than the fix, and `git stash create` silently omits untracked files. The commit also doubles as the
+revert point for a fix that makes things worse.
 
 ## 2. Stop on no blockers, not on no risk
 
@@ -38,9 +39,12 @@ not** — record them and finish.
 
 ## 3. A fresh reviewer every round
 
-Dispatch a **new sub-agent** per round carrying only the artifact, the repo's standards, the gate
-command, and the review method — never the conversation that produced the change, and **never the
-previous round's findings**, which anchor a reviewer into confirming a list instead of reading cold.
+Dispatch a **new sub-agent** per round carrying only the artifact, the fixed point, the repo's
+standards, the gate command, and the review method — never the conversation that produced the change,
+and **never the previous round's findings**, which anchor a reviewer into confirming a list instead of
+reading cold. Pass the fixed point explicitly: the review method tells the reviewer to derive one from
+the remote default branch, and a sub-agent has no user to ask and no idea which round it is, so it
+would re-read the whole change instead of the fix.
 
 If you cannot dispatch a sub-agent, say so before starting. Independence is the whole product here: a
 loop where the author reviews their own fixes is theater, and should be labelled as such.
@@ -71,8 +75,11 @@ changed contract reaches consumers the diff never mentions.
 
 ## 6. Polish last, then look at it
 
-Only once blockers are gone, run `/polish` — which must leave the gate green on both sides of its own
-run and change no behaviour.
+Only once blockers are gone, do the polish pass by reading `~/.agents/skills/polish/SKILL.md` and
+following it — the same way this skill reaches the review method rather than restating it. Polish is
+user-invoked, so no agent can call it by name; if that file is not on this machine, ask the user to run
+`/polish` and wait. The pass must leave the gate green on both sides of its own run and change no
+behaviour.
 
 Then **review the polish**. It is not optional. Polish's hard rule is that which branch wins must not
 change, and a reordered guard clause is a behaviour change in readability's clothing. The round is
@@ -87,7 +94,7 @@ alone.
 | Signal | Action |
 | --- | --- |
 | No blockers | Exit. Polish, review it, report. |
-| Round cap reached (default **3**) | Stop and report what is still open. The cap is a runaway guard, not a target — most loops finish in two rounds. |
+| Round cap reached (**3** review rounds) | Stop and report what is still open. The cap is a runaway guard, not a target — most loops finish in two rounds. The polish pass and its review are exempt: they are cleanup, not another hunt. |
 | The same blocker survives two fix attempts | Stop. That is a design problem wearing an implementation costume; another round will not move it. |
 | A round returns only nitpicks and risks | Exit — that is convergence, not incompleteness. |
 

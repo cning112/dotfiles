@@ -99,7 +99,7 @@ Backup naming/format matches `link_path` in `setup.sh` (read it; use the same `<
 
 ```
 agents/
-  skills/                 # 44 tracked skill dirs — canonical shared library (LINK dir → ~/.agents/skills)
+  skills/                 # tracked skill dirs — canonical shared library (LINK dir → ~/.agents/skills)
   .skill-lock.json        # skill manager lock (MIRROR)
 claude/
   CLAUDE.md, RTK.md       # existing (LINK)
@@ -173,8 +173,8 @@ Consequences worth remembering:
 
 - OpenCode parses `SKILL.md` frontmatter (its binary contains `SKILL.md`,
   `skills.paths` and `frontmatter`) but does not implement the flag. Because
-  entry #12 points `skills.paths` at the whole library, all 22 user-only skills
-  are **model-invocable** there — the agent can reach them unprompted.
+  entry #12 points `skills.paths` at the whole library, every user-only skill
+  is **model-invocable** there — the agent can reach them unprompted.
 - Evidence differs by row: dsh is read from its own bundle, Codex from the
   authoring guide embedded in its binary, OpenCode from the key's *absence* in a
   compiled binary. Absence is strong evidence for a literal frontmatter key, but
