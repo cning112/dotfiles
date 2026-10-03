@@ -52,6 +52,16 @@ Two frontmatter rules:
   `true` to keep the skill user-invocable only (`/name`); agents then hide it from
   the model's catalog entirely, so the agent will never reach for it on its own.
 
+Then the rule that catches the most:
+
+**Every imperative names its executor.** A skill is read by an agent, not a human
+at a terminal. Before writing a command, name the agent that runs it and confirm
+that agent can. Two blockers in this library came from skipping that step: an
+agent cannot invoke a `disable-model-invocation` skill, so a skill saying "run
+`/other-skill`" is unexecutable; and it cannot run anything interactive —
+`git add -p` with no terminal prints its prompt, reads EOF, stages nothing, and
+still exits 0, a silent success that leaves the index empty.
+
 ## Portability rules
 
 - Never hardcode `/Users/<name>` — use `$HOME`, and gate machine-specific tools
