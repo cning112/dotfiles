@@ -14,6 +14,10 @@ Adversarial review is a skill in its own right; this one drives it. Read
 `~/.agents/skills/adversarial-review/SKILL.md` and hand its body to each reviewer **verbatim** as the
 brief, rather than restating the method here and letting the two drift apart.
 
+**This skill commits.** Most agents hide it from their own catalog, but OpenCode ignores
+`disable-model-invocation` — so if you reached this skill without the user asking for it, stop and
+confirm before the first commit.
+
 ## 1. The loop
 
 ```
@@ -25,7 +29,8 @@ round 2: review the fix diff        → blockers? → fix → gate green
 Round 1 reviews the **uncommitted working tree** against the merge-base with the remote default branch
 — that merge-base is round 1's fixed point, and the one to hand the reviewer (§3). If it already
 returns ACCEPT, there is nothing to fix; go straight to step 6. Before each fix, **commit** the fixed
-point the next round diffs against, staging **the artifact's paths only** — if the tree holds unrelated
+point the next round diffs against, staging **the artifact's paths only** and with an explicit message
+(`git commit -m` — a bare `git commit` opens `$EDITOR` and hangs an agent). If the tree holds unrelated
 edits, ask the user before sweeping them in. A saved patch is not a usable base, because the next
 `git diff` returns the cumulative delta rather than the fix, and `git stash create` silently omits
 untracked files. The commit doubles as the revert point for a fix that makes things worse.
@@ -44,10 +49,12 @@ not** — record them and finish.
 Dispatch a **new sub-agent** per round carrying only the artifact, the fixed point, the repo's
 standards, the gate command, and the review method — never the conversation that produced the change,
 and **never the previous round's findings** in full, which anchor a reviewer into confirming a list
-instead of reading cold. Pass only each previous blocker's **Location and Trigger** — not its rationale
-or proposed fix — as claims to falsify: the reviewer re-runs every trigger against the fixed tree under
-§6 of the review method, and a trigger that still fires is a blocker again. Without them, a fix aimed
-at the wrong line passes, because the line it missed is not in the diff and only the fixer checked.
+instead of reading cold. Pass only each previous blocker's **Location and Trigger** — not the fixer's
+reasoning about the cause, nor the fix it applied — as claims to falsify: the reviewer re-runs every
+trigger against the fixed tree under §6 of the review method, and a trigger that still fires is a
+blocker again. Without them, a fix aimed at the wrong line passes, because the line it missed is not in
+the diff and only the fixer checked. The passed triggers are a floor, not the agenda: the reviewer
+still hunts fresh for whatever the fix broke.
 Pass the fixed point explicitly: the review method tells the reviewer to derive one from the remote
 default branch, and a sub-agent has no user to ask and no idea which round it is, so it would re-read
 the whole change instead of the fix.

@@ -96,7 +96,7 @@ Agent skills live in [`agents/skills/`](agents/skills) — one directory per ski
 | OpenCode | yes (via `skills.paths` in `opencode.jsonc`) | none |
 | Claude Code | no | add the name to `claude/skills-enabled.txt`, then `apply` |
 
-Add `disable-model-invocation: true` to a skill's frontmatter to keep it user-invocable (`/name`) while hiding it from the agent's own catalog, so the agent never picks it on its own.
+Add `disable-model-invocation: true` to a skill's frontmatter to keep it user-invocable (`/name`) while hiding it from the agent's own catalog, so an agent that honours the flag never picks it on its own. OpenCode ignores the flag, so a skill that acts on its own — `harden` makes commits — has to guard itself.
 
 ### Native Windows quickstart
 

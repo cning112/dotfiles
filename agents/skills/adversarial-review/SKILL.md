@@ -74,15 +74,18 @@ Then hunt the four a checklist never finds:
   implementation change the test would catch; if there is none, it is theater. So is a test that never
   runs — a skipped marker, or a file the gate never collects.
 
-Do mutation on a **throwaway copy**, never in the tree under review. The copy must carry the artifact:
-a bare `git worktree add` checks out a commit, without the uncommitted edits or untracked files under
-review. Copy the whole checkout instead (`rsync -a <repo>/ <tmp>/`, `.git` included). Then run the gate
-on the **unmutated copy first**: a copy can fail where the original passes (in these dotfiles the
-sync-drift check, because `$HOME` links point at the original checkout). A mutation is red only if it
-adds a failure to that baseline or changes a baseline failure's output — diff the two runs, not their
-counts. A check whose baseline failure hides the mutation cannot be tested in the copy: list it under
-Unverified, never as theater. Report, don't touch; an edited artifact invalidates the verdict that
-described it.
+Do mutation on a **throwaway copy**, never in the tree under review. The copy must carry the artifact —
+a bare `git worktree add` checks out a commit, without the uncommitted edits or untracked files — but
+must not share the original's git state. Exclude `.git` and re-`git init` the copy if git is needed
+(`rsync -a --exclude=.git <repo>/ <tmp>/`, or `cp -a` then remove `<tmp>/.git`). In a linked worktree
+this is not optional: its `.git` is a *file* pointing at the original's git dir, so a copy carrying it
+shares the original's index and refs, and a write there — `git add`, `git stash` — mutates the tree
+under review. Run the gate on the **unmutated copy first**: a copy can fail where the original passes
+(in these dotfiles the sync-drift check, because `$HOME` links point at the original checkout). Diff the
+two runs, not their counts, and count the mutation caught only when **the test under review** goes from
+pass to red — an unrelated failure turning red proves nothing about this test. A check whose baseline
+failure hides the mutation cannot be tested in the copy: list it under Unverified, never as theater.
+Report, don't touch; an edited artifact invalidates the verdict that described it.
 
 ## 6. Hold the line on re-review
 
@@ -97,7 +100,8 @@ verified by **re-running that trigger**, never by reading the patch; the fix the
   standards, never against whether this was the *right* change (that is /code-review's Spec axis).
   **ACCEPT** = no blockers, nothing unverified hiding one. **ACCEPT WITH RISK** = no blocker, but a named
   risk remains — what could still be wrong, what would reveal it — and it is **unreachable while a blocker
-  is open**: only the author can accept one, recorded rather than laundered. **REJECT** = a blocker.
+  is open**. You *propose* it; the author accepts it. Record the risk you are asking them to accept and
+  say plainly that accepting it is their call — never launder it into a bare ACCEPT. **REJECT** = a blocker.
 - **Unverified**: what you could not check and why. Empty is fine; a silent gap is not.
 - **Artifact**: merge-base → revision, files changed, gate command + observed result — or, when the
   repo names no gate, the substitute you ran, its result, and why it is not the repo's own.
