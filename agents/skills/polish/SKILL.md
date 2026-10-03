@@ -1,13 +1,15 @@
 ---
 name: polish
-description: Simplify recently changed code without changing what it does — flatten tangled conditionals, cut duplication, condense docstrings.
+description: Make recently changed code more readable without changing what it does — flatten tangled logic, cut duplication, and keep only the docstrings that earn their place.
 disable-model-invocation: true
 ---
 
 # Polish
 
-Improve how the code reads without changing what it does. Behaviour preservation is the whole
-contract: if output, errors, ordering, timing, or the public surface changes, it is not polish.
+Make recently changed code easier to read, without changing what it does. Two things are in scope:
+the **structure** — tangled logic made straight — and the **prose** — docstrings and comments cut to
+what earns its place. Behaviour preservation is the contract: if output, errors, ordering, timing, or
+the public surface changes, it is not polish.
 
 ## 1. Establish the baseline first
 
@@ -18,7 +20,8 @@ Without a green baseline you cannot claim behaviour was preserved, only assume i
 
 Default to the working tree and the last few commits, not the whole repo: a repo-wide tidy is
 unreviewable and unrevertable. If the whole repo is genuinely wanted, state the expected diff size
-before starting.
+before starting. Performance is not polish: a "this would be faster" change needs a before/after
+number, not a rewrite — leave it out.
 
 ## 3. Simplify the logic
 
@@ -46,12 +49,21 @@ Two hard rules, because this is where polish breaks code:
 - **Conditions can have side effects.** A null guard, a lazy load, or an `await` inside a test means
   an "equivalent" rewrite is not equivalent. When in doubt, leave it.
 
-## 4. Condense what it says
+## 4. Docstrings: brief, and only when they earn it
 
-A docstring carries what a first-time reader needs — what it does now, its parameters, returns,
-errors, invariants. Cut restatement of the signature and of the code below it. Keep the *why*: the
-rationale for a rejected alternative is provenance, not noise, and deleting it costs the next reader
-most. Comments explaining non-obvious domain logic are in the same category.
+A docstring exists to carry what the name and signature cannot — a precondition, an invariant, a
+unit, an error contract, a side effect, or the *why* behind a surprising choice. Anything else is
+noise, and noise has a cost: it is read on every visit, and it drifts out of date.
+
+- **Test it by deletion.** Remove the docstring and ask what a first-time reader loses. If nothing is
+  lost, it should not exist. `/** Gets the user. */` above `getUser()` is a no-op, and so is a
+  docstring that narrates the body line by line.
+- **Be brief.** One line unless the content genuinely needs more. Length has to be earned by what the
+  docstring carries, never by habit or by a template.
+- **Keep the why.** The rationale for a rejected alternative, or for a choice that looks odd, is
+  provenance — precisely what the deletion test protects.
+- **Keep the contract.** Parameters, returns, errors and invariants stay, but only where a
+  well-named signature does not already say them.
 
 ## 5. Leave alone what only looks redundant
 
@@ -62,8 +74,6 @@ most. Comments explaining non-obvious domain logic are in the same category.
 - **Renames and reformatting.** They bury the real change and break blame for every consumer.
 - **Tests.** Polishing a test must not reduce what it asserts. Confirm it still goes **red** without
   the fix — a shorter test that cannot fail is worse than a verbose one that can.
-- **Performance.** Out of scope: a "this would be faster" change needs a before/after number, and
-  several popular micro-optimizations are pessimizations.
 
 ## 6. Land it separately
 
