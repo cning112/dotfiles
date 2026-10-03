@@ -4,7 +4,7 @@
 // `pull` writes into the repo and `apply` writes into $HOME — neither may touch
 // the real checkout or the developer's machine.
 //
-// Run directly:  node tests/test_ai_sync.mjs
+// Run directly:  node --test tests/ai-sync.test.mjs
 
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';

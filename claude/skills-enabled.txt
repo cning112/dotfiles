@@ -1,6 +1,8 @@
+adversarial-review
 caveman
 design-an-interface
 diagnose
+dotfiles-change
 edit-article
 obsidian-vault
 request-refactor-plan

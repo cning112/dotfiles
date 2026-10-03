@@ -196,6 +196,76 @@ else
 fi
 
 # --------------------------------------------------------
+section "Shared skills"
+# --------------------------------------------------------
+# agents/skills/ is the shared library. dsh, Codex, and OpenCode reach it through
+# the ~/.agents/skills directory link; Claude Code is per-name via
+# claude/skills-enabled.txt. Two silent failure modes are worth gating:
+#   1. a frontmatter `name` that disagrees with the directory name (agents that
+#      key on `name`, e.g. OpenCode, drop the skill while the dir still exists);
+#   2. a name in skills-enabled.txt with no matching directory — ai-sync's status
+#      filters those out, so a typo reports "in sync" while creating no link.
+SKILLS_DIR="$SCRIPT_DIR/agents/skills"
+ENABLED_FILE="$SCRIPT_DIR/claude/skills-enabled.txt"
+
+if [ -d "$SKILLS_DIR" ]; then
+    # awk is not guaranteed on a minimal machine (see the guarded PATH_AWK in
+    # .commonrc), so degrade to skipping this check rather than failing it.
+    skill_awk=$(command -v awk 2>/dev/null || true)
+    skill_bad=""
+    skill_count=0
+    for d in "$SKILLS_DIR"/*/; do
+        [ -d "$d" ] || continue
+        skill_count=$((skill_count + 1))
+        [ -n "$skill_awk" ] || continue
+        name=$(basename "$d")
+        if [ ! -f "$d/SKILL.md" ]; then
+            skill_bad="$skill_bad $name(no SKILL.md)"
+            continue
+        fi
+        fm_name=$("$skill_awk" '/^---[[:space:]]*$/{n++; next} n==1 && /^name:/{sub(/^name:[[:space:]]*/,""); print; exit}' "$d/SKILL.md" 2>/dev/null)
+        [ "$fm_name" = "$name" ] || skill_bad="$skill_bad $name(says:${fm_name:-none})"
+    done
+    if [ -z "$skill_awk" ]; then
+        info "awk not found, skipped skill frontmatter name check"
+    elif [ -n "$skill_bad" ]; then
+        fail "skill name mismatch (dir vs frontmatter):$skill_bad"
+    else
+        ok "all $skill_count skills have frontmatter name matching their directory"
+    fi
+
+    if [ -f "$ENABLED_FILE" ]; then
+        enabled_missing=""
+        enabled_count=0
+        while IFS= read -r line || [ -n "$line" ]; do
+            line="${line%%#*}"
+            line=$(printf '%s' "$line" | tr -d '[:space:]')
+            [ -n "$line" ] || continue
+            enabled_count=$((enabled_count + 1))
+            [ -d "$SKILLS_DIR/$line" ] || enabled_missing="$enabled_missing $line"
+        done < "$ENABLED_FILE"
+        if [ -n "$enabled_missing" ]; then
+            fail "claude/skills-enabled.txt names with no skill dir:$enabled_missing"
+        else
+            ok "all $enabled_count skills-enabled.txt names exist in agents/skills"
+        fi
+    else
+        fail "claude/skills-enabled.txt not found"
+    fi
+else
+    fail "agents/skills not found"
+fi
+
+# OpenCode does not read ~/.agents/skills on its own; skills.paths is the only
+# thing that surfaces the shared library to it (and Claude Code never reads it).
+if grep -q '"skills"' "$SCRIPT_DIR/opencode/opencode.jsonc" 2>/dev/null &&
+    grep -q '\.agents/skills' "$SCRIPT_DIR/opencode/opencode.jsonc" 2>/dev/null; then
+    ok "opencode.jsonc wires skills.paths to the shared library"
+else
+    fail "opencode.jsonc does not point skills.paths at ~/.agents/skills"
+fi
+
+# --------------------------------------------------------
 section "Shell config syntax check"
 # --------------------------------------------------------
 for f in .commonrc .aliases .functions .tools .bashrc .bash_profile; do

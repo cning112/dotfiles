@@ -85,6 +85,19 @@ node scripts/ai-sync.mjs status   # verify sync state (no writes)
 
 **Secrets policy:** no secrets are ever committed — each tool logs in per device. Copy `env.example` to `~/.env.local` on macOS/WSL2 (already sourced by `.commonrc`); on Windows set the same names as user environment variables (`[Environment]::SetEnvironmentVariable('NAME','…','User')`, then restart the shell).
 
+### Shared skills
+
+Agent skills live in [`agents/skills/`](agents/skills) — one directory per skill, each with a `SKILL.md`. The library is linked to `~/.agents/skills`, so a skill added there is picked up with **no `apply`** by dsh, Codex, and OpenCode. Claude Code is the exception: it reads only `~/.claude/skills/` and never reads `~/.agents/skills`, so a skill reaches it only when its name is listed in [`claude/skills-enabled.txt`](claude/skills-enabled.txt) and `apply` runs.
+
+| Agent | Sees a new `agents/skills/<name>/` | Extra step |
+| --- | --- | --- |
+| dsh | yes | none |
+| Codex | yes | none |
+| OpenCode | yes (via `skills.paths` in `opencode.jsonc`) | none |
+| Claude Code | no | add the name to `claude/skills-enabled.txt`, then `apply` |
+
+Add `disable-model-invocation: true` to a skill's frontmatter to keep it user-invocable (`/name`) while hiding it from the agent's own catalog, so the agent never picks it on its own.
+
 ### Native Windows quickstart
 
 Prereqs: [Git for Windows](https://git-scm.com/download/win) (also supplies Claude Code's Bash tool/hook shell) and Node ≥ 22 or bun.

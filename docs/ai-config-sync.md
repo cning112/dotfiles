@@ -47,7 +47,7 @@ Rules:
 | 1 | `claude/CLAUDE.md`, `claude/RTK.md` | `~/.claude/CLAUDE.md`, `~/.claude/RTK.md` | LINK files | copy (file symlink if Dev Mode) |
 | 2 | `claude/settings.json` | `~/.claude/settings.json` | MIRROR (+fragment merge, see §4) | same |
 | 3 | `claude/settings.rtk-hook.json` | *(fragment; merged into #2 iff `rtk` on PATH)* | RENDER fragment | same |
-| 4 | `claude/skills-enabled.txt` | `~/.claude/skills/<name>` links → `~/.agents/skills/<name>` | LINK per name | junction per name; fallback copy |
+| 4 | `claude/skills-enabled.txt` | `~/.claude/skills/<name>` links → `~/.agents/skills/<name>` | LINK per name (Claude Code does **not** read `~/.agents/skills` itself, so this allow-list is the only way a shared skill reaches it) | junction per name; fallback copy |
 | 5 | `agents/skills/**` | `~/.agents/skills` | LINK dir | junction |
 | 6 | `agents/.skill-lock.json` | `~/.agents/.skill-lock.json` | MIRROR | same |
 | 7 | `codex/config.toml` | `~/.codex/config.toml` | MIRROR (preserve live `[projects.*]` + `[windows]`) | same |
@@ -55,7 +55,7 @@ Rules:
 | 9 | `codex/skills/**` (exclude `.system` — machine-managed, recreated in place, git-ignored) | `~/.codex/skills` | LINK dir | junction |
 | 10 | `codex/rules/**` (when non-empty) | `~/.codex/rules` | LINK dir | junction |
 | 11 | `opencode/{opencode.jsonc, oh-my-opencode-slim.json, dcp.jsonc, tui.json, cli.json}` | `~/.config/opencode/<file>` | LINK files | copy (file symlink if Dev Mode) |
-| 12 | `opencode/skills/**` | `~/.config/opencode/skills` | LINK dir | junction |
+| 12 | `opencode/skills/**` | `~/.config/opencode/skills` | LINK dir (OpenCode's own curated set; the shared library reaches it separately via `skills.paths` — see §5) | junction |
 | 13 | `dsh/settings.yaml`, `dsh/AGENTS.md` | `~/.dsh/<file>` | MIRROR | same |
 
 `dsh/cordis.patch.yml` is deliberately **not** synced: the Hindsight plugin writes it between its own `HINDSIGHT_CODING_AGENTS_DSH_START/END` markers and it contains an absolute per-machine path, so the plugin recreates it locally instead.
@@ -99,29 +99,59 @@ Backup naming/format matches `link_path` in `setup.sh` (read it; use the same `<
 
 ```
 agents/
-  skills/                 # 44 skill dirs — canonical shared library (LINK dir → ~/.agents/skills)
+  skills/                 # 44 tracked skill dirs — canonical shared library (LINK dir → ~/.agents/skills)
   .skill-lock.json        # skill manager lock (MIRROR)
 claude/
   CLAUDE.md, RTK.md       # existing (LINK)
   settings.json           # MIRROR
   settings.rtk-hook.json  # fragment merged at apply iff rtk on PATH
-  skills-enabled.txt      # names of the 12 shared skills linked into ~/.claude/skills
+  skills-enabled.txt      # names of the 13 shared skills linked into ~/.claude/skills
 codex/
   config.toml             # MIRROR; [projects.*] / [windows] are machine-local and preserved
   AGENTS.base.md          # render source; live AGENTS.md = base + claude/RTK.md
   skills/                 # gh-address-comments, gh-fix-ci, pdf, playwright (.system excluded)
 opencode/
   opencode.jsonc, oh-my-opencode-slim.json, dcp.jsonc, tui.json, cli.json
-  skills/                 # 8 skills
+                          # opencode.jsonc sets skills.paths → {env:HOME}/.agents/skills
+  skills/                 # 8 OpenCode-specific skills (a separate curated set)
 dsh/
-  settings.yaml, AGENTS.md, cordis.patch.yml   # MIRROR (copied at seed time when present)
+  settings.yaml, AGENTS.md      # MIRROR (copied at seed time when present)
+                                # cordis.patch.yml is deliberately never synced: the Hindsight
+                                # plugin recreates it locally, between its own markers
 scripts/ai-sync.mjs
 docs/ai-config-sync.md
 env.example
 .gitattributes
 ```
 
-The 12 shared skill names (`claude/skills-enabled.txt`): caveman, design-an-interface, diagnose, edit-article, obsidian-vault, request-refactor-plan, to-issues, to-prd, ubiquitous-language, write-a-skill, writing-great-skills, zoom-out.
+The 14 shared skill names (`claude/skills-enabled.txt`): adversarial-review, caveman, design-an-interface, diagnose, dotfiles-change, edit-article, obsidian-vault, request-refactor-plan, to-issues, to-prd, ubiquitous-language, write-a-skill, writing-great-skills, zoom-out.
+
+### Skill discovery across agents (verified 2026-10-03)
+
+The shared library reaches each agent by a **different mechanism**, so a new skill
+is not uniformly visible. Verified against each tool on this machine rather than
+inferred from docs:
+
+| Agent | How it finds skills | New `agents/skills/<name>/` visible? |
+|---|---|---|
+| dsh | reads `~/.agents/skills` directly | yes, immediately — no `apply` needed |
+| Codex | host root `~/.agents/skills` (evidence: its log lists `(file: ~/.agents/skills/<name>/SKILL.md)`) | yes, immediately — no `apply` needed |
+| OpenCode | scans `~/.config/opencode/{skill,skills}` and `<project>/.opencode/{skill,skills}`, **plus** every path in `skills.paths` | yes — `opencode.jsonc` sets `skills.paths = ["{env:HOME}/.agents/skills"]` |
+| Claude Code | only `~/.claude/skills/`, per name | **no** — add the name to `claude/skills-enabled.txt`, then `apply` |
+
+Consequences worth remembering:
+
+- Because `~/.agents/skills` is a **directory** LINK, dsh, Codex, and OpenCode see
+  a new skill the moment it is written — there is no apply step to forget.
+- Claude Code is the only agent needing the allow-list, and entry #4 is the entire
+  mechanism; it never reads `~/.agents/skills` itself.
+- `{env:HOME}` interpolation inside `skills.paths` is confirmed working: OpenCode
+  resolved all 44 shared skills (up from its own 8) with no `~` expansion needed.
+- `disable-model-invocation: true` removes a skill from the model-visible catalog
+  (dsh hides all 21 such skills) while leaving it user-invocable via `/name`. Omit
+  it for skills an agent should reach for on its own.
+- Windows: junction-based `~/.agents/skills` discovery is still unverified for
+  OpenCode's `skills.paths` (see the open items in §8).
 
 ## 6. Secrets & per-device login
 
@@ -146,7 +176,7 @@ Notes:
 
 ## 8. Verification
 
-- `test.sh` gains an "AI config sync" section: run `status --json` with whichever runtime is available (node, else bun); exit 2 → INFO (not applied yet), 1 → FAIL (drift), 0 → PASS. It also runs `tests/ai-sync.test.mjs` — via `node --test` or `bun test`, both of which accept the filename and fail correctly — which exercises the engine against a throwaway repo copy and a fake `$HOME` and asserts that plugin-registered hooks and machine-local Codex tables survive `apply`, never reach the repo on `pull`, and do not count as drift.
+- `test.sh` gains an "AI config sync" section: run `status --json` with whichever runtime is available (node, else bun); exit 2 → INFO (not applied yet), 1 → FAIL (drift), 0 → PASS. It also runs `tests/ai-sync.test.mjs` — via `node --test` or `bun test`, both of which accept the filename and fail correctly — which exercises the engine against a throwaway repo copy and a fake `$HOME` and asserts that plugin-registered hooks and machine-local Codex tables survive `apply`, never reach the repo on `pull`, and do not count as drift. It also checks the skill wiring: that `opencode.jsonc` declares `skills.paths` pointing at the shared library, and that every skill's frontmatter `name` matches its directory.
 - Windows: manual checklist (status clean + per-tool smoke test).
 - Empirical open items to confirm on real machines: (1) Claude settings writer vs symlink behavior on current version (could upgrade to LINK later); (2) junction-based skill discovery on Windows; (3) which OpenCode line is installed (v1 files vs v2 SQLite auth); (4) rtk availability on Windows.
 
