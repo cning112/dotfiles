@@ -105,7 +105,7 @@ claude/
   CLAUDE.md, RTK.md       # existing (LINK)
   settings.json           # MIRROR
   settings.rtk-hook.json  # fragment merged at apply iff rtk on PATH
-  skills-enabled.txt      # names of the 13 shared skills linked into ~/.claude/skills
+  skills-enabled.txt      # the allow-list: only these names reach ~/.claude/skills
 codex/
   config.toml             # MIRROR; [projects.*] / [windows] are machine-local and preserved
   AGENTS.base.md          # render source; live AGENTS.md = base + claude/RTK.md
@@ -124,7 +124,9 @@ env.example
 .gitattributes
 ```
 
-The 14 shared skill names (`claude/skills-enabled.txt`): adversarial-review, caveman, design-an-interface, diagnose, dotfiles-change, edit-article, obsidian-vault, request-refactor-plan, to-issues, to-prd, ubiquitous-language, write-a-skill, writing-great-skills, zoom-out.
+Claude Code sees exactly the names listed in `claude/skills-enabled.txt` and nothing else. That file
+is the source of truth and is deliberately not restated here — a copied count or list goes stale the
+moment a skill is added.
 
 ### Skill discovery across agents (verified 2026-10-03)
 
@@ -148,7 +150,7 @@ Consequences worth remembering:
 - `{env:HOME}` interpolation inside `skills.paths` is confirmed working: OpenCode
   resolved all 44 shared skills (up from its own 8) with no `~` expansion needed.
 - `disable-model-invocation: true` removes a skill from the model-visible catalog
-  (dsh hides all 22 such skills) while leaving it user-invocable via `/name`. Omit
+  (dsh hides every skill carrying the flag) while leaving it user-invocable via `/name`. Omit
   it for skills an agent should reach for on its own. OpenCode is the exception —
   it ignores the flag (see *Skill invocation across agents* below).
 - Windows: junction-based `~/.agents/skills` discovery is still unverified for

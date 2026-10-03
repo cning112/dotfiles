@@ -5,6 +5,7 @@ diagnose
 dotfiles-change
 edit-article
 obsidian-vault
+polish
 request-refactor-plan
 to-issues
 to-prd
