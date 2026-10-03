@@ -148,10 +148,35 @@ Consequences worth remembering:
 - `{env:HOME}` interpolation inside `skills.paths` is confirmed working: OpenCode
   resolved all 44 shared skills (up from its own 8) with no `~` expansion needed.
 - `disable-model-invocation: true` removes a skill from the model-visible catalog
-  (dsh hides all 21 such skills) while leaving it user-invocable via `/name`. Omit
-  it for skills an agent should reach for on its own.
+  (dsh hides all 22 such skills) while leaving it user-invocable via `/name`. Omit
+  it for skills an agent should reach for on its own. OpenCode is the exception —
+  it ignores the flag (see *Skill invocation across agents* below).
 - Windows: junction-based `~/.agents/skills` discovery is still unverified for
   OpenCode's `skills.paths` (see the open items in §8).
+
+### Skill invocation across agents (verified 2026-10-03)
+
+Discovery answers whether an agent can *see* a skill; this answers how you
+*reach* one, and the two are not the same question. Verified against each tool's
+own binary rather than inferred from docs:
+
+| Agent | `disable-model-invocation` honored? | How you invoke a skill |
+|---|---|---|
+| dsh | yes | the `/` menu — the only entry point for a user-only skill; matches an ordered subsequence of the name, prefix hits first |
+| Claude Code | yes | `/name` |
+| Codex | yes — the key is listed in its embedded skill-authoring guide, beside `user-invocable` and `argument-hint` | slash command, with `$ARGUMENTS` |
+| OpenCode | **no** | not implemented |
+
+Consequences worth remembering:
+
+- OpenCode parses `SKILL.md` frontmatter (its binary contains `SKILL.md`,
+  `skills.paths` and `frontmatter`) but does not implement the flag. Because
+  entry #12 points `skills.paths` at the whole library, all 22 user-only skills
+  are **model-invocable** there — the agent can reach them unprompted.
+- Evidence differs by row: dsh is read from its own bundle, Codex from the
+  authoring guide embedded in its binary, OpenCode from the key's *absence* in a
+  compiled binary. Absence is strong evidence for a literal frontmatter key, but
+  it is not proof — re-probe after an OpenCode upgrade (see §8).
 
 ## 6. Secrets & per-device login
 
@@ -178,7 +203,7 @@ Notes:
 
 - `test.sh` gains an "AI config sync" section: run `status --json` with whichever runtime is available (node, else bun); exit 2 → INFO (not applied yet), 1 → FAIL (drift), 0 → PASS. It also runs `tests/ai-sync.test.mjs` — via `node --test` or `bun test`, both of which accept the filename and fail correctly — which exercises the engine against a throwaway repo copy and a fake `$HOME` and asserts that plugin-registered hooks and machine-local Codex tables survive `apply`, never reach the repo on `pull`, and do not count as drift. It also checks the skill wiring: that `opencode.jsonc` declares `skills.paths` pointing at the shared library, and that every skill's frontmatter `name` matches its directory.
 - Windows: manual checklist (status clean + per-tool smoke test).
-- Empirical open items to confirm on real machines: (1) Claude settings writer vs symlink behavior on current version (could upgrade to LINK later); (2) junction-based skill discovery on Windows; (3) which OpenCode line is installed (v1 files vs v2 SQLite auth); (4) rtk availability on Windows.
+- Empirical open items to confirm on real machines: (1) Claude settings writer vs symlink behavior on current version (could upgrade to LINK later); (2) junction-based skill discovery on Windows; (3) which OpenCode line is installed (v1 files vs v2 SQLite auth); (4) rtk availability on Windows; (5) whether OpenCode implements `disable-model-invocation` (2.0.22 does not — re-probe after upgrades).
 
 ## 9. Rollout
 
