@@ -165,7 +165,7 @@ own binary rather than inferred from docs:
 | dsh | yes | the `/` menu — the only entry point for a user-only skill; matches an ordered subsequence of the name, prefix hits first |
 | Claude Code | yes | `/name` |
 | Codex | yes — the key is listed in its embedded skill-authoring guide, beside `user-invocable` and `argument-hint` | slash command, with `$ARGUMENTS` |
-| OpenCode | **no** | not implemented |
+| OpenCode | **no** — the flag is ignored, not the skill | unverified; and the agent can reach the skill unprompted |
 
 Consequences worth remembering:
 
