@@ -32,6 +32,13 @@ Rules:
 1. Link at directory level wherever possible.
 2. Never commit symlinks.
 3. Every overwrite is backed up to `<target>.backup.<timestamp>` (same contract as `link_path` in `setup.sh`).
+4. **Machine-local state is preserved, not synced.** AI tools and the plugins that register into them write per-machine state — absolute `$HOME` paths, hook-trust hashes keyed by local path. That state is preserved on `apply`, dropped on `pull`, and ignored when comparing, so it can never become permanent drift and can never reach another machine. A table the repo already declares belongs to the repo and is never treated as machine-local, which keeps `apply` idempotent and stops `pull` deleting curated content.
+
+   Detected as machine-local:
+   - Claude `settings.json`: hook entries whose command names an absolute path outside the repo (e.g. `node "/Users/<you>/.hindsight/coding-agents/dist/claude-hook.js"`). Path-free hooks such as `rtk hook claude` are repo-managed.
+   - Codex `config.toml`: `[projects.*]`, `[windows]`, `[hooks.state.*]` (local path + content hash), and any `[mcp_servers.*]` table whose body points outside the repo.
+
+   A known consequence: on a machine where a plugin has registered, `apply` rewrites the file with those tables moved to the end. `status` therefore compares *live-with-machine-local-removed* against the repo rather than the whole file as text.
 
 ## 3. Mapping (source of truth for `scripts/ai-sync.mjs`)
 
@@ -49,7 +56,9 @@ Rules:
 | 10 | `codex/rules/**` (when non-empty) | `~/.codex/rules` | LINK dir | junction |
 | 11 | `opencode/{opencode.jsonc, oh-my-opencode-slim.json, dcp.jsonc, tui.json, cli.json}` | `~/.config/opencode/<file>` | LINK files | copy (file symlink if Dev Mode) |
 | 12 | `opencode/skills/**` | `~/.config/opencode/skills` | LINK dir | junction |
-| 13 | `dsh/settings.yaml`, `dsh/AGENTS.md`, `dsh/cordis.patch.yml` | `~/.dsh/<file>` | MIRROR | same |
+| 13 | `dsh/settings.yaml`, `dsh/AGENTS.md` | `~/.dsh/<file>` | MIRROR | same |
+
+`dsh/cordis.patch.yml` is deliberately **not** synced: the Hindsight plugin writes it between its own `HINDSIGHT_CODING_AGENTS_DSH_START/END` markers and it contains an absolute per-machine path, so the plugin recreates it locally instead.
 
 **Never synced (machine-local / secret / runtime):**
 - Claude: `.claude.json`, `.credentials.json`, `settings.local.json`, `projects/`, `plugins/`, `history.jsonl`, `shell-snapshots/`, `file-history/`, `backups/`, caches, `skills/synced/`
@@ -135,7 +144,7 @@ Notes:
 
 ## 8. Verification
 
-- `test.sh` gains an "AI config sync" section: run `node scripts/ai-sync.mjs status --json` when Node exists; exit 2 → INFO (not applied yet), 1 → FAIL (drift), 0 → PASS.
+- `test.sh` gains an "AI config sync" section: run `node scripts/ai-sync.mjs status --json` when Node exists; exit 2 → INFO (not applied yet), 1 → FAIL (drift), 0 → PASS. It also runs `node --test tests/test_ai_sync.mjs`, which exercises the engine against a throwaway repo copy and a fake `$HOME` and asserts that plugin-registered hooks and machine-local Codex tables survive `apply`, never reach the repo on `pull`, and do not count as drift.
 - Windows: manual checklist (status clean + per-tool smoke test).
 - Empirical open items to confirm on real machines: (1) Claude settings writer vs symlink behavior on current version (could upgrade to LINK later); (2) junction-based skill discovery on Windows; (3) which OpenCode line is installed (v1 files vs v2 SQLite auth); (4) rtk availability on Windows.
 

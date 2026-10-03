@@ -23,7 +23,11 @@ const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const IS_WIN = process.platform === 'win32';
 
 const OPENCODE_FILES = ['opencode.jsonc', 'oh-my-opencode-slim.json', 'dcp.jsonc', 'tui.json', 'cli.json'];
-const DSH_FILES = ['settings.yaml', 'AGENTS.md', 'cordis.patch.yml'];
+// cordis.patch.yml is deliberately excluded: the Hindsight plugin writes it
+// between its own HINDSIGHT_CODING_AGENTS_DSH_START/END markers and it contains
+// an absolute per-machine path, so syncing it would spread plugin state and
+// break on every other machine. The plugin recreates it locally.
+const DSH_FILES = ['settings.yaml', 'AGENTS.md'];
 
 const p = (...parts) => path.join(...parts);
 const claudePath = (name) => p(REPO, 'claude', name);
@@ -190,40 +194,77 @@ function contentsEqual(entry, actual, expected) {
 // ---------------------------------------------------------------------------
 
 // Machine-local Codex tables that must survive a Windows MIRROR overwrite.
-function isMachineLocalTomlHeader(line) {
-  const h = line.trim();
-  return /^\[\[?projects(\.|\]|$)/.test(h) || /^\[\[?windows(\]|\.|$)/.test(h);
+// Split TOML into blocks: each table header plus the lines that follow it. The
+// preamble before any header is a block with a null header.
+function tomlBlocks(text) {
+  const blocks = [];
+  let current = { header: null, lines: [] };
+  for (const line of String(text).split(/\r?\n/)) {
+    if (/^\s*\[/.test(line)) {
+      blocks.push(current);
+      current = { header: line.trim(), lines: [line] };
+    } else {
+      current.lines.push(line);
+    }
+  }
+  blocks.push(current);
+  return blocks;
 }
 
-function extractTomlSections(text, matcher) {
-  const out = [];
-  let capturing = false;
-  for (const line of String(text).split(/\r?\n/)) {
-    if (/^\s*\[/.test(line)) capturing = matcher(line);
-    if (capturing) out.push(line);
-  }
-  return out.join('\n');
+const blockText = (b) => b.lines.join('\n');
+
+// Tables this machine owns and the repo must never carry:
+//   - [projects.*]        keyed by absolute checkout path
+//   - [windows]           machine-local Codex state
+//   - [hooks.state.*]     hook trust, keyed by local path + content hash
+//   - [mcp_servers.*]     plugin-registered, when it points outside the repo
+//
+// `repoText` is the repo's own copy: a table the repo already declares belongs to
+// the repo, so it is never treated as machine-local. That keeps apply idempotent
+// (no duplicate append) and stops pull deleting curated tables.
+function machineLocalTomlMatcher(repoText) {
+  const owned = new Set(
+    tomlBlocks(repoText ?? '')
+      .filter((b) => b.header !== null)
+      .map((b) => b.header)
+  );
+  return (header, body) => {
+    if (header === null || owned.has(header)) return false;
+    if (/^\[\[?projects(\.|\]|$)/.test(header)) return true;
+    if (/^\[\[?windows(\]|\.|$)/.test(header)) return true;
+    if (/^\[\[?hooks\.state(\.|\]|$)/.test(header)) return true;
+    if (/^\[\[?mcp_servers\./.test(header)) return commandReferencesForeignPath(body);
+    return false;
+  };
 }
 
-function stripTomlSections(text, matcher) {
-  const out = [];
-  let dropping = false;
-  for (const line of String(text).split(/\r?\n/)) {
-    if (/^\s*\[/.test(line)) dropping = matcher(line);
-    if (!dropping) out.push(line);
-  }
-  return out.join('\n');
+const normalizeToml = (text) => String(text).replace(/\r\n/g, '\n').replace(/\n+$/, '');
+
+function extractTomlSections(text, match) {
+  return tomlBlocks(text)
+    .filter((b) => b.header !== null && match(b.header, blockText(b)))
+    .map(blockText)
+    .join('\n');
+}
+
+function stripTomlSections(text, match) {
+  return tomlBlocks(text)
+    .filter((b) => b.header === null || !match(b.header, blockText(b)))
+    .map(blockText)
+    .join('\n');
 }
 
 function renderCodexConfig(liveText, repoText) {
   const preserved =
-    typeof liveText === 'string' ? extractTomlSections(liveText, isMachineLocalTomlHeader) : '';
+    typeof liveText === 'string'
+      ? extractTomlSections(liveText, machineLocalTomlMatcher(repoText))
+      : '';
   let out = String(repoText).replace(/\n+$/, '') + '\n';
   if (preserved.trim() !== '') out += '\n' + preserved.replace(/\n+$/, '') + '\n';
   return out;
 }
 
-function hookEntryHasRtk(entry) {
+function hookCommands(entry) {
   const cmds = [];
   if (entry && typeof entry === 'object') {
     if (typeof entry.command === 'string') cmds.push(entry.command);
@@ -233,7 +274,29 @@ function hookEntryHasRtk(entry) {
       }
     }
   }
-  return cmds.some((c) => /rtk hook claude/.test(c));
+  return cmds;
+}
+
+// True when a command string names an absolute path outside this repo. Plugins
+// register themselves with absolute per-machine paths (e.g. Hindsight writes
+//   node "/Users/<you>/.hindsight/coding-agents/dist/claude-hook.js"
+// into every tool it supports), so those hook entries are machine-local.
+// Repo/fragment-managed hooks such as `rtk hook claude` name no path at all and
+// stay unaffected.
+function commandReferencesForeignPath(command) {
+  const found = String(command).match(/(?:[A-Za-z]:[\\/]|\/)[^\s"']+/g) || [];
+  return found.some((raw) => {
+    const abs = path.resolve(raw.replace(/\\/g, '/'));
+    return abs !== REPO && !abs.startsWith(REPO + path.sep);
+  });
+}
+
+function hookEntryIsMachineLocal(entry) {
+  return hookCommands(entry).some(commandReferencesForeignPath);
+}
+
+function hookEntryHasRtk(entry) {
+  return hookCommands(entry).some((c) => /rtk hook claude/.test(c));
 }
 
 // Machine -> repo: drop the rtk hook, which lives in the render fragment.
@@ -250,6 +313,48 @@ function stripRtkHooks(jsonText) {
     if (Object.keys(obj.hooks).length === 0) delete obj.hooks;
   }
   return JSON.stringify(obj, null, 2) + '\n';
+}
+
+// Machine -> repo: drop hooks this machine owns. Committing them would apply
+// absolute /Users/<you>/.hindsight/... paths on every other machine, where they
+// do not exist.
+function stripMachineLocalHooks(jsonText) {
+  let obj;
+  try {
+    obj = JSON.parse(jsonText);
+  } catch {
+    return null;
+  }
+  if (obj && isPlainObject(obj.hooks)) {
+    for (const [event, arr] of Object.entries(obj.hooks)) {
+      if (!Array.isArray(arr)) continue;
+      const kept = arr.filter((e) => !hookEntryIsMachineLocal(e));
+      if (kept.length > 0) obj.hooks[event] = kept;
+      else delete obj.hooks[event];
+    }
+    if (Object.keys(obj.hooks).length === 0) delete obj.hooks;
+  }
+  return JSON.stringify(obj, null, 2) + '\n';
+}
+
+// Repo -> machine: keep hook entries that a plugin registered locally, so an
+// apply cannot delete an integration the repo knows nothing about (and so status
+// does not report permanent drift for them).
+function preserveMachineLocalHooks(rendered, live) {
+  const liveHooks = live && live.hooks;
+  if (!isPlainObject(liveHooks)) return rendered;
+  const out = { ...rendered };
+  const outHooks = isPlainObject(out.hooks) ? { ...out.hooks } : {};
+  const key = (e) => JSON.stringify(e);
+  for (const [event, arr] of Object.entries(liveHooks)) {
+    if (!Array.isArray(arr)) continue;
+    const existing = Array.isArray(outHooks[event]) ? outHooks[event] : [];
+    const seen = new Set(existing.map(key));
+    const extras = arr.filter((e) => hookEntryIsMachineLocal(e) && !seen.has(key(e)));
+    if (extras.length > 0) outHooks[event] = [...existing, ...extras];
+  }
+  if (Object.keys(outHooks).length > 0) out.hooks = outHooks;
+  return out;
 }
 
 // Shallow merge, with one safety exception: when both sides define a `hooks`
@@ -288,16 +393,27 @@ function buildClaudeSettings() {
   } catch {
     return null;
   }
+  let merged = base;
   const fragPath = claudePath('settings.rtk-hook.json');
   if (which('rtk') && exists(fragPath)) {
     try {
-      const fragment = JSON.parse(fs.readFileSync(fragPath, 'utf8'));
-      return JSON.stringify(mergeSettings(base, fragment), null, 2) + '\n';
+      merged = mergeSettings(base, JSON.parse(fs.readFileSync(fragPath, 'utf8')));
     } catch {
       /* fragment unreadable/invalid: fall through to the plain repo copy */
     }
   }
-  return JSON.stringify(base, null, 2) + '\n';
+  // Carry over hooks a plugin registered on this machine. The repo does not own
+  // them; dropping them here would break the integration on every apply and make
+  // status report drift that can never be resolved.
+  const liveText = readFileOrNull(p(HOME, '.claude', 'settings.json'));
+  if (liveText !== null) {
+    try {
+      merged = preserveMachineLocalHooks(merged, JSON.parse(liveText));
+    } catch {
+      /* unreadable live settings: render without carrying hooks over */
+    }
+  }
+  return JSON.stringify(merged, null, 2) + '\n';
 }
 
 function buildCodexAgents() {
@@ -730,8 +846,13 @@ function statusCodexConfig(entry) {
   if (!exists(entry.target)) return { state: 'missing', detail: 'not applied' };
   const liveText = readFileOrNull(entry.target);
   if (liveText === null) return { state: 'error', detail: 'unreadable' };
-  const expected = renderCodexConfig(liveText, repoText);
-  if (!isSymlink(entry.target) && liveText === expected) return { state: 'ok', detail: 'up to date' };
+  // Compare live-with-machine-local-tables-removed against the repo. A plain text
+  // comparison against repo+appended-sections never settles: apply moves those
+  // tables to the end of the file, so the order would keep differing.
+  const stripped = stripTomlSections(liveText, machineLocalTomlMatcher(repoText));
+  if (!isSymlink(entry.target) && normalizeToml(stripped) === normalizeToml(repoText)) {
+    return { state: 'ok', detail: 'up to date' };
+  }
   return { state: 'drift', detail: 'content differs' };
 }
 
@@ -854,15 +975,19 @@ function runPull(opts) {
       id: 'claude-settings',
       from: p(HOME, '.claude', 'settings.json'),
       to: claudePath('settings.json'),
-      transform: stripRtkHooks,
-      note: 'stripped rtk PreToolUse hook',
+      transform: (t) => {
+        const withoutRtk = stripRtkHooks(t);
+        return withoutRtk === null ? null : stripMachineLocalHooks(withoutRtk);
+      },
+      note: 'stripped rtk + machine-local plugin hooks',
     },
     {
       id: 'codex-config',
       from: p(HOME, '.codex', 'config.toml'),
       to: p(REPO, 'codex', 'config.toml'),
-      transform: (t) => stripTomlSections(t, isMachineLocalTomlHeader),
-      note: 'stripped [projects.*] + [windows]',
+      transform: (t) =>
+        stripTomlSections(t, machineLocalTomlMatcher(readFileOrNull(p(REPO, 'codex', 'config.toml')) ?? '')),
+      note: 'stripped machine-local tables',
     },
     {
       id: 'agents-lock',

@@ -103,8 +103,3 @@ command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.
 args = ["mcp"]
 cwd = "."
 enabled = false
-
-[hooks.state]
-
-[hooks.state."/Users/cning/dev/rustq/.codex/hooks.json:pre_tool_use:0:0"]
-trusted_hash = "sha256:fbd6184d1dcb52694e78f526db2241a320a79ff2cf6fc619512444b3743f4ecc"

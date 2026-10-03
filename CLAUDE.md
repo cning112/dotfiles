@@ -38,7 +38,7 @@ Shell and tool configuration for macOS and WSL2 (Ubuntu). All dotfiles are manag
 
 **`scripts/hist_analyze.py`** — the `hist-analyze` command. PEP 723 inline deps, run via `uv run --script`; behaviour tests in `tests/test_hist_analyze.py`, executed by `test.sh`.
 
-**`scripts/ai-sync.mjs`** — the AI-tool config sync engine (Node ≥ 22, zero deps) for Claude Code, Codex, OpenCode, and dsh. It implements three modes: LINK (symlink/junction read-mostly files and dirs), MIRROR (repo ↔ machine copies for files the apps rewrite, e.g. `claude/settings.json`), and RENDER (generated files, e.g. `~/.codex/AGENTS.md`). Design, mapping table, and platform caveats live in `docs/ai-config-sync.md`.
+**`scripts/ai-sync.mjs`** — the AI-tool config sync engine (Node ≥ 22, zero deps) for Claude Code, Codex, OpenCode, and dsh. It implements three modes: LINK (symlink/junction read-mostly files and dirs), MIRROR (repo ↔ machine copies for files the apps rewrite, e.g. `codex/config.toml`), and RENDER (generated files, e.g. `~/.claude/settings.json`, which is repo+fragment merged with machine-local plugin hooks preserved, and `~/.codex/AGENTS.md`). Machine-local state written by the tools or by plugins that register into them is preserved on `apply`, dropped on `pull`, and ignored for drift — see rule 4 in `docs/ai-config-sync.md`. Design, mapping table, and platform caveats live in `docs/ai-config-sync.md`.
 
 ## Editing conventions
 

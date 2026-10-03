@@ -165,6 +165,15 @@ if command -v node &>/dev/null; then
             fail "AI config sync drift detected: ${drift_ids:-unknown}"
             ;;
     esac
+
+    # The engine's own behaviour tests run against a throwaway copy of the repo
+    # plus a fake $HOME, so they never touch this checkout or this machine.
+    if node --test "$SCRIPT_DIR/tests/test_ai_sync.mjs" >/dev/null 2>&1; then
+        ok "ai-sync behavior tests pass"
+    else
+        fail "ai-sync behavior tests failed"
+        node --test "$SCRIPT_DIR/tests/test_ai_sync.mjs"
+    fi
 else
     info "node not installed, skipping AI config sync check"
 fi
