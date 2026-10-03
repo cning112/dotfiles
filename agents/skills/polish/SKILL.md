@@ -1,6 +1,6 @@
 ---
 name: polish
-description: Tighten recently changed code for clarity without changing behaviour — simplify, de-duplicate, and condense docstrings, keeping the diff readable as pure cleanup.
+description: Simplify recently changed code without changing what it does — flatten tangled conditionals, cut duplication, condense docstrings.
 disable-model-invocation: true
 ---
 
@@ -20,15 +20,40 @@ Default to the working tree and the last few commits, not the whole repo: a repo
 unreviewable and unrevertable. If the whole repo is genuinely wanted, state the expected diff size
 before starting.
 
-## 3. Condense what it says
+## 3. Simplify the logic
+
+The highest-yield work, and mostly about conditionals:
+
+- **Guard clauses over nesting.** Invert the condition and return, continue, or throw early. A
+  pyramid of nested `if`s becomes a linear list of rules read top to bottom.
+- **Drop branches that carry no information.** The `else` after a `return`; the
+  `if (x) return true else return false` shape; an accumulator assigned in every arm that just wants
+  a return.
+- **Name the condition.** A boolean the reader has to decode becomes a predicate in the domain's
+  words — `order.isRefundable()` beats `o.status === 3 && !o.shipped && …`. The branch then states
+  its intent instead of its arithmetic.
+- **Decompose the arms.** When each branch is a paragraph, extract it: the conditional should show
+  the *decision*, and the extracted names should show the *work*.
+- **Map instead of cascade.** When every branch turns the same input into a different value, data
+  beats four `else if`s.
+- **Make the parallel arms parallel.** Inconsistent structure across symmetric branches forces the
+  reader to diff them mentally.
+
+Two hard rules, because this is where polish breaks code:
+
+- **Which branch wins must not change.** Reordering overlapping tests silently changes behaviour —
+  check the cases against each other, not only one at a time.
+- **Conditions can have side effects.** A null guard, a lazy load, or an `await` inside a test means
+  an "equivalent" rewrite is not equivalent. When in doubt, leave it.
+
+## 4. Condense what it says
 
 A docstring carries what a first-time reader needs — what it does now, its parameters, returns,
 errors, invariants. Cut restatement of the signature and of the code below it. Keep the *why*: the
 rationale for a rejected alternative is provenance, not noise, and deleting it costs the next reader
-most. Comments explaining non-obvious domain logic are in the same category — shortening those is
-not polish.
+most. Comments explaining non-obvious domain logic are in the same category.
 
-## 4. Leave alone what only looks redundant
+## 5. Leave alone what only looks redundant
 
 - **Guards, copies, ordering, waits.** Defensive checks, explicit copies, deliberate sequencing and
   timeouts look removable until they are not. If you cannot say what breaks without it, keep it.
@@ -37,11 +62,10 @@ not polish.
 - **Renames and reformatting.** They bury the real change and break blame for every consumer.
 - **Tests.** Polishing a test must not reduce what it asserts. Confirm it still goes **red** without
   the fix — a shorter test that cannot fail is worse than a verbose one that can.
-- **Performance.** "This would be faster" needs a before/after number, not a rewrite, and several
-  popular micro-optimizations are pessimizations: a list comprehension usually beats an append loop,
-  and an enhanced `for` compiles to the same iterator it replaces. Out of scope here.
+- **Performance.** Out of scope: a "this would be faster" change needs a before/after number, and
+  several popular micro-optimizations are pessimizations.
 
-## 5. Land it separately
+## 6. Land it separately
 
 Polish goes in its own commit, apart from behaviour changes, so a reviewer can read it as pure
 cleanup and revert it alone. A diff that mixes the two is neither.
