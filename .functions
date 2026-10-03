@@ -21,7 +21,9 @@ function fenv() {
 # fcd: fuzzy cd into any subdirectory (uses fd if available)
 function fcd() {
     local dir preview_cmd
-    if command -v tree &>/dev/null; then
+    if command -v eza &>/dev/null; then
+        preview_cmd='eza --tree --level=2 --color=always {} | head -30'
+    elif command -v tree &>/dev/null; then
         preview_cmd='tree -C {} | head -30'
     else
         preview_cmd='ls {}'

@@ -14,6 +14,19 @@ if command -v bat &>/dev/null; then
     alias less="bat"
 fi
 
+# eza: better ls (git status, icons). Kept off plain 'ls' so muscle-memory flags still work.
+if command -v eza &>/dev/null; then
+    alias l="eza --group-directories-first"
+    alias ll="eza -alh --git --group-directories-first"
+    alias lt="eza --tree --level=2 --group-directories-first"
+fi
+
+# Disk usage / free space / processes / system monitor
+command -v dust &>/dev/null && alias du="dust"
+command -v duf &>/dev/null && alias df="duf"
+command -v procs &>/dev/null && alias psa="procs"
+command -v btm &>/dev/null && alias top="btm"
+
 # zoxide provides 'z' and 'zi' natively after init in .tools
 # Optionally replace 'cd' entirely: change zoxide init to --cmd cd in .tools
 

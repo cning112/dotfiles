@@ -82,8 +82,10 @@ if command -v fzf &>/dev/null; then
         export FZF_CTRL_T_OPTS="--preview 'cat {}'"
     fi
 
-    # Directory preview: use tree if available
-    if command -v tree &>/dev/null; then
+    # Directory preview: prefer eza, fall back to tree
+    if command -v eza &>/dev/null; then
+        export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always {} | head -50'"
+    elif command -v tree &>/dev/null; then
         export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -50'"
     fi
 

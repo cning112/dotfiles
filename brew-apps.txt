@@ -15,6 +15,12 @@ nvim
 
 # Modern replacements suggested by 'hist-analyze' (see .functions ALTERNATIVES)
 sd
+eza
+dust
+duf
+procs
+bottom
+hyperfine
 xh
 doggo
 
