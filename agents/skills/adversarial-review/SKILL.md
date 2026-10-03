@@ -76,15 +76,17 @@ Then hunt the four a checklist never finds:
 
 Do mutation on a **throwaway copy**, never in the tree under review. The copy must carry the artifact —
 a bare `git worktree add` checks out a commit, without the uncommitted edits or untracked files — but
-must not share the original's git state. Exclude `.git` and re-`git init` the copy if git is needed
-(`rsync -a --exclude=.git <repo>/ <tmp>/`, or `cp -a` then remove `<tmp>/.git`). In a linked worktree
+must not share the original's git state. Exclude `.git` and, if git is needed, re-`git init` the copy
+and commit that baseline so a mutation can be reverted (`rsync -a --exclude=.git <repo>/ <tmp>/`, or
+`cp -a` then `rm -rf <tmp>/.git`). In a linked worktree
 this is not optional: its `.git` is a *file* pointing at the original's git dir, so a copy carrying it
 shares the original's index and refs, and a write there — `git add`, `git stash` — mutates the tree
 under review. Run the gate on the **unmutated copy first**: a copy can fail where the original passes
 (in these dotfiles the sync-drift check, because `$HOME` links point at the original checkout). Diff the
 two runs, not their counts, and count the mutation caught only when **the test under review** goes from
-pass to red — an unrelated failure turning red proves nothing about this test. A check whose baseline
-failure hides the mutation cannot be tested in the copy: list it under Unverified, never as theater.
+pass to red, or stops running at all — name which. An unrelated failure turning red proves nothing about
+this test. A check whose baseline failure hides the mutation cannot be tested in the copy: list it under
+Unverified, never as theater.
 Report, don't touch; an edited artifact invalidates the verdict that described it.
 
 ## 6. Hold the line on re-review

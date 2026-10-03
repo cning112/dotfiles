@@ -49,8 +49,10 @@ Two frontmatter rules:
 
 - `name` must match the directory name.
 - Omit `disable-model-invocation` to let agents auto-invoke the skill. Set it to
-  `true` to keep the skill user-invocable only (`/name`); agents then hide it from
-  the model's catalog entirely, so the agent will never reach for it on its own.
+  `true` to keep the skill user-invocable only (`/name`); the agents that honour
+  the flag then hide it from their own catalog entirely. OpenCode ignores it
+  (`docs/ai-config-sync.md` §5), so "user-only" is not universal — a skill that
+  acts on its own has to guard itself.
 
 Then the rule that catches the most:
 

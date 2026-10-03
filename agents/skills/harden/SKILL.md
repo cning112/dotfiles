@@ -30,7 +30,7 @@ Round 1 reviews the **uncommitted working tree** against the merge-base with the
 — that merge-base is round 1's fixed point, and the one to hand the reviewer (§3). If it already
 returns ACCEPT, there is nothing to fix; go straight to step 6. Before each fix, **commit** the fixed
 point the next round diffs against, staging **the artifact's paths only** and with an explicit message
-(`git commit -m` — a bare `git commit` opens `$EDITOR` and hangs an agent). If the tree holds unrelated
+(`git commit -m` — a bare `git commit` opens the configured editor and hangs an agent). If the tree holds unrelated
 edits, ask the user before sweeping them in. A saved patch is not a usable base, because the next
 `git diff` returns the cumulative delta rather than the fix, and `git stash create` silently omits
 untracked files. The commit doubles as the revert point for a fix that makes things worse.
@@ -71,6 +71,9 @@ the next round's reviewer re-runs the trigger independently (§3).
 - A blocker is withdrawn only on evidence its trigger does not fire, never on argument.
 - **A fix is not done until the gate is green.** Quote the command and its result.
 - Fix the cause the blocker names, not the line it points at. A fix that moves the failure is not one.
+- **Grep for the other instances.** A universal claim, a guard, or a rule usually lives in more than one
+  file. Check the whole library before calling the fix done, or the next round finds the sibling you
+  left behind.
 - Fix nothing the round did not name. Unrequested edits are unreviewed code, and they invalidate the
   diff the next round is about to read.
 

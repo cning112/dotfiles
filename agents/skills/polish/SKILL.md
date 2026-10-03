@@ -11,6 +11,10 @@ the **structure** — tangled logic made straight — and the **prose** — docs
 their place. Behaviour preservation is the contract: if output, errors, ordering, timing, or
 the public surface changes, it is not polish.
 
+**This skill commits.** Most agents hide it from their own catalog, but OpenCode ignores
+`disable-model-invocation` — so if you reached this skill without the user asking for it, stop and
+confirm before the first commit.
+
 ## 1. Establish the baseline first
 
 Run the target repo's gate **before** editing — in these dotfiles `./test.sh`, bar 0 failed — and again
