@@ -14,9 +14,10 @@ Adversarial review is a skill in its own right; this one drives it. Read
 `~/.agents/skills/adversarial-review/SKILL.md` and hand its body to each reviewer **verbatim** as the
 brief, rather than restating the method here and letting the two drift apart.
 
-**This skill commits.** Most agents hide it from their own catalog, but OpenCode ignores
+**This skill edits and commits.** Most agents hide it from their own catalog, but OpenCode ignores
 `disable-model-invocation` — so if you reached this skill without the user asking for it, stop and
-confirm before the first commit.
+confirm before the first edit or commit, including the §6 polish pass, which edits even when round
+1 accepts and nothing is committed.
 
 ## 1. The loop
 
@@ -30,8 +31,10 @@ Round 1 reviews the **uncommitted working tree** against the merge-base with the
 — that merge-base is round 1's fixed point, and the one to hand the reviewer (§3). If it already
 returns ACCEPT, there is nothing to fix; go straight to step 6. Before each fix, **commit** the fixed
 point the next round diffs against, staging **the artifact's paths only** and with an explicit message
-(`git commit -m` — a bare `git commit` opens the configured editor and hangs an agent). If the tree holds unrelated
-edits, ask the user before sweeping them in. A saved patch is not a usable base, because the next
+(`git commit -m`). A bare `git commit` commits nothing in an agent: it opens the configured editor,
+which can hang with no terminal, or aborts on the empty message where the harness sets
+`GIT_EDITOR=true` (Claude Code). If the tree holds unrelated edits, ask the user before sweeping them
+in. A saved patch is not a usable base, because the next
 `git diff` returns the cumulative delta rather than the fix, and `git stash create` silently omits
 untracked files. The commit doubles as the revert point for a fix that makes things worse.
 

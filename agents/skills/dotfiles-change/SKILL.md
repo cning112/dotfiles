@@ -72,7 +72,9 @@ that agent can. Two blockers in this library came from skipping that step:
   stdin fails *silently* without one: `git add -p` hits EOF, stages nothing, and
   still exits 0. Piping the answers works but is brittle, so prefer a route that
   needs no input at all — and always `git commit -m`, never a bare `git commit`,
-  which opens the configured editor and hangs.
+  which commits nothing: it opens the configured editor, which can hang with no
+  terminal, or aborts on the empty message where the harness sets
+  `GIT_EDITOR=true` (Claude Code).
 
 ## Portability rules
 
