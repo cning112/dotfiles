@@ -80,8 +80,9 @@ noise, and noise has a cost: it is read on every visit, and it drifts out of dat
 
 Polish goes in its own commit, apart from behaviour changes, so a reviewer can read it as pure
 cleanup and revert it alone. A diff that mixes the two is neither. If the behaviour change is still
-uncommitted, commit that first — polish cannot be its own commit while it sits in the same tree. If the
-two genuinely cannot be separated, say so instead of mixing them.
+uncommitted, either commit it first or stage the polish hunks on their own (`git add -p`) — staging
+only the paths you polished, never `git add -A`. If the two genuinely cannot be separated, say so
+instead of mixing them.
 
 ## Output
 
