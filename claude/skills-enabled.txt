@@ -4,6 +4,7 @@ design-an-interface
 diagnose
 dotfiles-change
 edit-article
+harden
 obsidian-vault
 polish
 request-refactor-plan
