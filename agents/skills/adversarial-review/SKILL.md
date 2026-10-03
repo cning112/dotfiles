@@ -78,7 +78,8 @@ Do mutation on a **throwaway copy**, never in the tree under review. The copy mu
 a bare `git worktree add` checks out a commit, without the uncommitted edits or untracked files — but
 must not share the original's git state. Exclude `.git` and, if git is needed, re-`git init` the copy
 and commit that baseline so a mutation can be reverted (`rsync -a --exclude=.git <repo>/ <tmp>/`, or
-`cp -a` then `rm -rf <tmp>/.git`). In a linked worktree
+`cp -a` then `find <tmp> -name .git -exec rm -rf {} +` — a checkout can hold nested worktree pointers,
+so deleting only the top-level `.git` leaves one live). In a linked worktree
 this is not optional: its `.git` is a *file* pointing at the original's git dir, so a copy carrying it
 shares the original's index and refs, and a write there — `git add`, `git stash` — mutates the tree
 under review. Run the gate on the **unmutated copy first**: a copy can fail where the original passes

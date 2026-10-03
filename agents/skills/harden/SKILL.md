@@ -73,7 +73,10 @@ the next round's reviewer re-runs the trigger independently (§3).
 - Fix the cause the blocker names, not the line it points at. A fix that moves the failure is not one.
 - **Grep for the other instances.** A universal claim, a guard, or a rule usually lives in more than one
   file. Check the whole library before calling the fix done, or the next round finds the sibling you
-  left behind.
+  left behind. One exception: a skill named in `agents/.skill-lock.json` is **upstream-installed**, and
+  you never edit it in place — its folder hash is the manager's record of what it installed, so a local
+  edit drifts from that record and is discarded at the next update. Record those and hand the decision
+  back to the user.
 - Fix nothing the round did not name. Unrequested edits are unreviewed code, and they invalidate the
   diff the next round is about to read.
 

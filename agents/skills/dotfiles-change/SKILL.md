@@ -54,6 +54,10 @@ Two frontmatter rules:
   (`docs/ai-config-sync.md` §5), so "user-only" is not universal — a skill that
   acts on its own has to guard itself.
 
+Skills named in `agents/.skill-lock.json` are **upstream-installed**. The lock stores each one's folder
+hash as the manager's record of what it installed, so never edit one in place: a local edit drifts from
+that record and is discarded at the next update. Record the problem and hand it to the user.
+
 Then the rule that catches the most:
 
 **Every imperative names its executor.** A skill is read by an agent, not a human
@@ -68,7 +72,7 @@ that agent can. Two blockers in this library came from skipping that step:
   stdin fails *silently* without one: `git add -p` hits EOF, stages nothing, and
   still exits 0. Piping the answers works but is brittle, so prefer a route that
   needs no input at all — and always `git commit -m`, never a bare `git commit`,
-  which opens `$EDITOR` and hangs.
+  which opens the configured editor and hangs.
 
 ## Portability rules
 
