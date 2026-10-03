@@ -15,3 +15,6 @@ codex/skills/.system/
 .slim/worktrees/
 .slim/worktrees.json
 # END oh-my-opencode-slim worktrees
+
+# Hindsight plugin-generated skill (regenerated from upstream; never synced)
+agents/skills/hindsight-coding-agent/

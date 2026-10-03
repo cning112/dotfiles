@@ -49,3 +49,8 @@ fi
 
 # Starship prompt (must be last)
 command -v starship &>/dev/null && eval "$(starship init zsh)"
+
+# >>> oh-my-opencode-slim background subagents >>>
+export OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true
+export OPENCODE_ENABLE_EXA=1
+# <<< oh-my-opencode-slim background subagents <<<
