@@ -86,9 +86,9 @@ noise, and noise has a cost: it is read on every visit, and it drifts out of dat
 Polish goes in its own commit, apart from behaviour changes, so a reviewer can read it as pure
 cleanup and revert it alone. A diff that mixes the two is neither. If the behaviour change is still
 uncommitted, commit it first — asking the user if that change is theirs, and with an explicit message
-(`git commit -m`: a bare `git commit` commits nothing in an agent — it opens the configured editor,
-which can hang with no terminal, or aborts on the empty message where the harness sets
-`GIT_EDITOR=true`, as Claude Code does). Splitting the hunks
+(`git commit -m`: a bare `git commit` hands the message to the configured editor, so with no terminal
+it can hang, and under `GIT_EDITOR=true`, as Claude Code sets it, it aborts on an empty message or
+commits one git prefilled — a merge, cherry-pick or revert — unread). Splitting the hunks
 afterwards means `git add -p`, which reads its answers from stdin, and at EOF stages nothing while
 still exiting 0. Stage only the paths you polished, never `git add -A`. If the two genuinely cannot be
 separated, say so instead of mixing them silently.
