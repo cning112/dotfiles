@@ -80,9 +80,11 @@ noise, and noise has a cost: it is read on every visit, and it drifts out of dat
 
 Polish goes in its own commit, apart from behaviour changes, so a reviewer can read it as pure
 cleanup and revert it alone. A diff that mixes the two is neither. If the behaviour change is still
-uncommitted, commit it first: splitting the hunks afterwards means `git add -p`, which needs a
-terminal, and without one stages nothing and still exits 0. Stage only the paths you polished, never
-`git add -A`. If the two genuinely cannot be separated, say so instead of mixing them silently.
+uncommitted, commit it first — asking the user if that change is theirs, and with an explicit message
+(`git commit -m`: a bare `git commit` opens an editor and hangs an agent). Splitting the hunks
+afterwards means `git add -p`, which reads its answers from stdin, and at EOF stages nothing while
+still exiting 0. Stage only the paths you polished, never `git add -A`. If the two genuinely cannot be
+separated, say so instead of mixing them silently.
 
 ## Output
 

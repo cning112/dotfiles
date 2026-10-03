@@ -39,7 +39,7 @@ assumed from docs:
 | dsh | yes, instantly | none |
 | Codex | yes, instantly | none |
 | OpenCode | yes, via `skills.paths` | none (already wired) |
-| Claude Code | no | add `<name>` to `claude/skills-enabled.txt`, then `apply` |
+| Claude Code | no | add `<name>` to `claude/skills-enabled.txt`, then `node scripts/ai-sync.mjs apply` |
 
 Because the library is reached through a **directory** link, dsh, Codex, and
 OpenCode pick up a new skill with no `apply` at all. Claude Code is per-name and
@@ -56,11 +56,17 @@ Then the rule that catches the most:
 
 **Every imperative names its executor.** A skill is read by an agent, not a human
 at a terminal. Before writing a command, name the agent that runs it and confirm
-that agent can. Two blockers in this library came from skipping that step: an
-agent cannot invoke a `disable-model-invocation` skill, so a skill saying "run
-`/other-skill`" is unexecutable; and it cannot run anything interactive —
-`git add -p` with no terminal prints its prompt, reads EOF, stages nothing, and
-still exits 0, a silent success that leaves the index empty.
+that agent can. Two blockers in this library came from skipping that step:
+
+- An agent cannot invoke a `disable-model-invocation` skill **where that flag is
+  honoured** — OpenCode ignores it (`docs/ai-config-sync.md` §5). To reuse another
+  skill's method, have the agent read `~/.agents/skills/<other>/SKILL.md` and
+  follow it, the way `harden` §6 reaches `polish`.
+- An agent's shell has no terminal, and a command that reads its answers from
+  stdin fails *silently* without one: `git add -p` hits EOF, stages nothing, and
+  still exits 0. Piping the answers works but is brittle, so prefer a route that
+  needs no input at all — and always `git commit -m`, never a bare `git commit`,
+  which opens `$EDITOR` and hangs.
 
 ## Portability rules
 

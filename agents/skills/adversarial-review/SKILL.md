@@ -93,7 +93,7 @@ verified by **re-running that trigger**, never by reading the patch; the fix the
   is open**: only the author can accept one, recorded rather than laundered. **REJECT** = a blocker.
 - **Unverified**: what you could not check and why. Empty is fine; a silent gap is not.
 - **Artifact**: merge-base → revision, files changed, gate command + observed result — or, when the
-  repo names no gate, that it has none and none was run.
+  repo names no gate, the substitute you ran, its result, and why it is not the repo's own.
 - **Risk**: LOW | MEDIUM | HIGH | CRITICAL — from blast radius and reversibility, not finding count.
 
 ### Blockers
