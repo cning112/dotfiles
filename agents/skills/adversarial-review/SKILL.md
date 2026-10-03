@@ -78,7 +78,9 @@ Do mutation on a **throwaway copy**, never in the tree under review. The copy mu
 a bare `git worktree add` checks out a commit, without the uncommitted edits or untracked files under
 review. Copy the whole checkout instead (`rsync -a <repo>/ <tmp>/`, `.git` included). Then run the gate on the **unmutated copy first**: a copy
 can fail where the original passes (in these dotfiles the sync-drift check, because `$HOME` links
-point at the original checkout). A mutation is red only if it adds a failure to that baseline.
+point at the original checkout). A mutation is red only if it adds a failure to that baseline or
+changes a baseline failure's output — diff the two runs, not their counts. A check whose baseline
+failure hides the mutation cannot be tested in the copy: list it under Unverified, never as theater.
 Report, don't touch; an edited artifact invalidates the verdict that described it.
 
 ## 6. Hold the line on re-review
