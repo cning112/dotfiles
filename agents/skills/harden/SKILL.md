@@ -22,11 +22,13 @@ round 2: review the fix diff        → blockers? → fix → gate green
    …                                → none     → polish, then review it → done
 ```
 
-Round 1 reviews the **uncommitted working tree**. If it already returns ACCEPT, there is nothing to
-fix — go straight to step 6. Before each fix, **commit** the fixed point the next round diffs against:
-a saved patch is not a usable base, because the next `git diff` returns the cumulative delta rather
-than the fix, and `git stash create` silently omits untracked files. The commit also doubles as the
-revert point for a fix that makes things worse.
+Round 1 reviews the **uncommitted working tree** against the merge-base with the remote default branch
+— that merge-base is round 1's fixed point, and the one to hand the reviewer (§3). If it already
+returns ACCEPT, there is nothing to fix; go straight to step 6. Before each fix, **commit** the fixed
+point the next round diffs against, staging **the artifact's paths only** — if the tree holds unrelated
+edits, ask the user before sweeping them in. A saved patch is not a usable base, because the next
+`git diff` returns the cumulative delta rather than the fix, and `git stash create` silently omits
+untracked files. The commit doubles as the revert point for a fix that makes things worse.
 
 ## 2. Stop on no blockers, not on no risk
 
@@ -77,9 +79,10 @@ changed contract reaches consumers the diff never mentions.
 
 Only once blockers are gone, do the polish pass by reading `~/.agents/skills/polish/SKILL.md` and
 following it — the same way this skill reaches the review method rather than restating it. Polish is
-user-invoked, so no agent can call it by name; if that file is not on this machine, ask the user to run
-`/polish` and wait. The pass must leave the gate green on both sides of its own run and change no
-behaviour.
+user-invoked, which puts it out of reach of the agents that honour that flag (OpenCode ignores it, so
+do not rely on that); reading the file is the portable route. If it is not on this machine, ask the
+user to run `/polish` and wait. The pass must leave the gate green on both sides of its own run and
+change no behaviour.
 
 Then **review the polish**. It is not optional. Polish's hard rule is that which branch wins must not
 change, and a reordered guard clause is a behaviour change in readability's clothing. The round is
@@ -87,7 +90,9 @@ cheap — narrow the hunt to structure and the two gate runs — but it is a rou
 artifact invalidates the verdict that described it.
 
 Polish lands in its **own commit**, apart from the behaviour fixes, so it can be read and reverted
-alone.
+alone. If that review returns a blocker, the pass broke behaviour it promised not to touch: fix it in a
+commit of its own — never inside the polish commit — and give it a fresh round under §3, like any other
+fix.
 
 ## 7. When to stop
 

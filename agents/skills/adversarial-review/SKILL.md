@@ -34,8 +34,9 @@ A pre-PR review happens *before* the commit: the default artifact is the **uncom
 
 A generic checklist is a no-op — you already look for null derefs and hardcoded secrets. The findings
 only a repo-aware reviewer can make are the ones that block. Read what the repo documents (`CLAUDE.md`,
-`CONTRIBUTING.md`, `docs/`), find its gate, and **run it** — in this repo `./test.sh`, bar 0 failed. The
-artifact may be config, not code: the gate is whatever proves it still loads.
+`CONTRIBUTING.md`, `docs/`), find its gate, and **run it** — in these dotfiles `./test.sh`, bar 0
+failed; elsewhere, whatever that repo's own docs name. The artifact may be config, not code: the gate
+is whatever proves it still loads.
 
 Report the verbatim command and result; an unverified "tests pass" is itself a finding.
 
