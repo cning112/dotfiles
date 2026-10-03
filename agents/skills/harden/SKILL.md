@@ -48,9 +48,9 @@ instead of reading cold. Pass only each previous blocker's **Location and Trigge
 or proposed fix — as claims to falsify: the reviewer re-runs every trigger against the fixed tree under
 §6 of the review method, and a trigger that still fires is a blocker again. Without them, a fix aimed
 at the wrong line passes, because the line it missed is not in the diff and only the fixer checked.
-Pass the fixed point explicitly: the review method tells the reviewer to derive one from
-the remote default branch, and a sub-agent has no user to ask and no idea which round it is, so it
-would re-read the whole change instead of the fix.
+Pass the fixed point explicitly: the review method tells the reviewer to derive one from the remote
+default branch, and a sub-agent has no user to ask and no idea which round it is, so it would re-read
+the whole change instead of the fix.
 
 If you cannot dispatch a sub-agent, say so before starting. Independence is the whole product here: a
 loop where the author reviews their own fixes is theater, and should be labelled as such.
