@@ -33,10 +33,11 @@ returns ACCEPT, there is nothing to fix; go straight to step 6. Before each fix,
 point the next round diffs against, staging **the artifact's paths only** and with an explicit message
 (`git commit -m`). A bare `git commit` hands the message to the configured editor, so what it does
 depends on the environment: with no terminal it can hang; under `GIT_EDITOR=true` (Claude Code) it
-aborts on an empty message, or commits one git prefilled (a merge, cherry-pick or revert) unread. If the tree holds unrelated edits, ask the user before sweeping them
-in. A saved patch is not a usable base, because the next
-`git diff` returns the cumulative delta rather than the fix, and `git stash create` silently omits
-untracked files. The commit doubles as the revert point for a fix that makes things worse.
+aborts on an empty message, or commits one git prefilled (a merge, cherry-pick or revert) unread. If
+the tree holds unrelated edits, ask the user before sweeping them in. A saved patch is not a usable
+base, because the next `git diff` returns the cumulative delta rather than the fix, and `git stash
+create` silently omits untracked files. The commit doubles as the revert point for a fix that makes
+things worse.
 
 ## 2. Stop on no blockers, not on no risk
 
