@@ -36,7 +36,8 @@ A generic checklist is a no-op — you already look for null derefs and hardcode
 only a repo-aware reviewer can make are the ones that block. Read what the repo documents (`CLAUDE.md`,
 `CONTRIBUTING.md`, `docs/`), find its gate, and **run it** — in these dotfiles `./test.sh`, bar 0
 failed; elsewhere, whatever that repo's own docs name, or if they name none, say so and name what you
-ran instead. The artifact may be config, not code: the gate is whatever proves it still loads.
+ran instead — and confirm it can go red, or it is not a gate. The artifact may be config, not code:
+the gate is whatever proves it still loads.
 
 Report the verbatim command and result; an unverified "tests pass" is itself a finding.
 
@@ -91,7 +92,8 @@ verified by **re-running that trigger**, never by reading the patch; the fix the
   risk remains — what could still be wrong, what would reveal it — and it is **unreachable while a blocker
   is open**: only the author can accept one, recorded rather than laundered. **REJECT** = a blocker.
 - **Unverified**: what you could not check and why. Empty is fine; a silent gap is not.
-- **Artifact**: merge-base → revision, files changed, gate command + observed result.
+- **Artifact**: merge-base → revision, files changed, gate command + observed result — or, when the
+  repo names no gate, that it has none and none was run.
 - **Risk**: LOW | MEDIUM | HIGH | CRITICAL — from blast radius and reversibility, not finding count.
 
 ### Blockers
