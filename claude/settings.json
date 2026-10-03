@@ -1,5 +1,5 @@
 {
-  "model": "opus",
+  "model": "sonnet",
   "enabledPlugins": {
     "everything-claude-code@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
@@ -41,6 +41,9 @@
     },
     "claude-opus-5-5": {
       "effortLevel": "high"
+    },
+    "claude-sonnet-5-5": {
+      "effortLevel": "low"
     }
   },
   "tui": "fullscreen",
