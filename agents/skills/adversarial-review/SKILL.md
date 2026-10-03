@@ -74,8 +74,12 @@ Then hunt the four a checklist never finds:
   implementation change the test would catch; if there is none, it is theater. So is a test that never
   runs — a skipped marker, or a file the gate never collects.
 
-Do mutation on a **throwaway copy** (`git worktree` or a temp dir), never in the tree under review — it is
-uncommitted. Report, don't touch; an edited artifact invalidates the verdict that described it.
+Do mutation on a **throwaway copy**, never in the tree under review. The copy must carry the artifact:
+a bare `git worktree add` checks out a commit, without the uncommitted edits or untracked files under
+review. Copy the whole checkout instead (`rsync -a <repo>/ <tmp>/`, `.git` included). Then run the gate on the **unmutated copy first**: a copy
+can fail where the original passes (in these dotfiles the sync-drift check, because `$HOME` links
+point at the original checkout). A mutation is red only if it adds a failure to that baseline.
+Report, don't touch; an edited artifact invalidates the verdict that described it.
 
 ## 6. Hold the line on re-review
 

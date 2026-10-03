@@ -43,8 +43,12 @@ not** — record them and finish.
 
 Dispatch a **new sub-agent** per round carrying only the artifact, the fixed point, the repo's
 standards, the gate command, and the review method — never the conversation that produced the change,
-and **never the previous round's findings**, which anchor a reviewer into confirming a list instead of
-reading cold. Pass the fixed point explicitly: the review method tells the reviewer to derive one from
+and **never the previous round's findings** in full, which anchor a reviewer into confirming a list
+instead of reading cold. Pass only each previous blocker's **Location and Trigger** — not its rationale
+or proposed fix — as claims to falsify: the reviewer re-runs every trigger against the fixed tree under
+§6 of the review method, and a trigger that still fires is a blocker again. Without them, a fix aimed
+at the wrong line passes, because the line it missed is not in the diff and only the fixer checked.
+Pass the fixed point explicitly: the review method tells the reviewer to derive one from
 the remote default branch, and a sub-agent has no user to ask and no idea which round it is, so it
 would re-read the whole change instead of the fix.
 
@@ -54,7 +58,8 @@ loop where the author reviews their own fixes is theater, and should be labelled
 ## 4. Fix the trigger, and prove it
 
 A fix starts by **re-running the previous round's trigger** — the concrete input or state the blocker
-named — and confirming it no longer fires. Reading the patch proves nothing.
+named — and confirming it no longer fires. Reading the patch proves nothing. That run is the fixer's;
+the next round's reviewer re-runs the trigger independently (§3).
 
 - A blocker is withdrawn only on evidence its trigger does not fire, never on argument.
 - **A fix is not done until the gate is green.** Quote the command and its result.
