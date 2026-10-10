@@ -43,8 +43,12 @@ Report the verbatim command and result; an unverified "tests pass" is itself a f
 
 ## 4. Read the artifact cold
 
-- **First-time reader**: every docstring states what the component does *now* — parameters, returns,
-  errors, invariants.
+- **First-time reader**: every docstring and comment — a shell function's header comment included — is
+  true of what the code does *now*, and states the contract (parameters, returns, errors, invariants)
+  wherever the signature does not already say it. A comment that restates the line beneath it is noise.
+- **Prose the diff made false**: for every behaviour the diff changes, grep the comments, docstrings,
+  README and docs that describe it. Prose outside the diff that now lies is invisible in a diff, for
+  the same reason a missing call site is (Scope, below).
 - **Journey vs provenance**: flag "updated in round 2", "refactored because X failed", "temporary fix",
   scratchpads — but keep the rationale for a rejected alternative. Test: would a first-time reader be
   *slowed or misled*? Journey fails it; `we don't buffer here, unlike X, because Y` passes.

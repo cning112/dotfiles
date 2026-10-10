@@ -1,14 +1,14 @@
 ---
 name: polish
-description: Make recently changed code more readable without changing what it does — flatten tangled logic and keep only the docstrings that earn their place.
+description: Make recently changed code more readable without changing what it does — flatten tangled logic and keep only the comments and docstrings that earn their place.
 disable-model-invocation: true
 ---
 
 # Polish
 
 Make recently changed code easier to read, without changing what it does. Two things are in scope:
-the **structure** — tangled logic made straight — and the **prose** — docstrings cut to what earns
-their place. Behaviour preservation is the contract: if output, errors, ordering, timing, or
+the **structure** — tangled logic made straight — and the **prose** — comments and docstrings cut to
+what earns their place. Behaviour preservation is the contract: if output, errors, ordering, timing, or
 the public surface changes, it is not polish.
 
 **This skill edits and commits.** Most agents hide it from their own catalog, but OpenCode ignores
@@ -55,21 +55,24 @@ Two hard rules, because this is where polish breaks code:
 - **Conditions can have side effects.** A null guard, a lazy load, or an `await` inside a test means
   an "equivalent" rewrite is not equivalent. When in doubt, leave it.
 
-## 4. Docstrings: brief, and only when they earn it
+## 4. Comments and docstrings: brief, and only when they earn it
 
-A docstring exists to carry what the name and signature cannot — a precondition, an invariant, a
-unit, an error contract, a side effect, or the *why* behind a surprising choice. Anything else is
-noise, and noise has a cost: it is read on every visit, and it drifts out of date.
+A comment or docstring exists to carry what the code, name and signature cannot — a precondition, an
+invariant, a unit, an error contract, a side effect, or the *why* behind a surprising choice. Anything
+else is noise, and noise has a cost: it is read on every visit, and it drifts out of date. A shell
+function's header comment is its docstring, and follows the same rules.
 
-- **Test it by deletion.** Remove the docstring and ask what a first-time reader loses. If nothing is
-  lost, it should not exist. `/** Gets the user. */` above `getUser()` is a no-op, and so is a
-  docstring that narrates the body line by line.
+- **Test it by deletion.** Remove it and ask what a first-time reader loses. If nothing is lost, it
+  should not exist. `/** Gets the user. */` above `getUser()` is a no-op, and so are a docstring that
+  narrates the body line by line and an inline `# increment the counter` above `count+=1`.
 - **Be brief.** One line unless the content genuinely needs more. Length has to be earned by what the
-  docstring carries, never by habit or by a template.
+  prose carries, never by habit or by a template.
 - **Keep the why.** The rationale for a rejected alternative, or for a choice that looks odd, is
   provenance — precisely what the deletion test protects.
 - **Keep the contract.** Parameters, returns, errors and invariants stay, but only where a
   well-named signature does not already say them.
+- **Report a comment the code contradicts; do not rewrite it.** From here you cannot tell which of the
+  two is wrong, and making the comment match the code buries the bug if the code is the wrong one.
 
 ## 5. Leave alone what only looks redundant
 
@@ -98,4 +101,5 @@ separated, say so instead of mixing them silently.
 - **Gate**: the command, and its result before and after.
 - **Changed**: one line per edit — what got simpler, and why behaviour is unchanged.
 - **Left alone**: what looked redundant and stayed, with the reason.
-- **Out of scope**: cleanup you found but did not do, because it would change behaviour.
+- **Out of scope**: cleanup you found but did not do, because it would change behaviour — and every
+  comment the code contradicts, with both quoted.
