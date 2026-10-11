@@ -8,6 +8,11 @@
     "opencode-handoff",
     "{env:HOME}/.hindsight/coding-agents"
   ],
+  "skills": {
+    "paths": [
+      "{env:HOME}/.agents/skills"
+    ]
+  },
   "mcp": {
     "gh_grep": {
       "type": "remote",
