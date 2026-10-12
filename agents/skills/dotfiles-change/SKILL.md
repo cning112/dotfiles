@@ -49,10 +49,12 @@ Two frontmatter rules:
 
 - `name` must match the directory name.
 - Omit `disable-model-invocation` to let agents auto-invoke the skill. Set it to
-  `true` to keep the skill user-invocable only (`/name`); the agents that honour
-  the flag then hide it from their own catalog entirely. OpenCode ignores it
-  (`docs/ai-config-sync.md` §5), so "user-only" is not universal — a skill that
-  acts on its own has to guard itself.
+  `true` to keep the skill user-invocable only (`/name`). Only **dsh and Claude
+  Code** then hide it from their model catalog. OpenCode ignores the flag, and
+  Codex accepts it without filtering on it — verified live on 0.162.0, where a
+  flagged skill and a plain one both appeared in the model-visible catalog
+  (`docs/ai-config-sync.md` §5). So "user-only" holds on half the agents, and a
+  skill that acts on its own has to guard itself in prose.
 
 Skills named in `agents/.skill-lock.json` are **upstream-installed**. The lock stores each one's folder
 hash as the manager's record of what it installed, so never edit one in place: a local edit drifts from
@@ -65,8 +67,10 @@ at a terminal. Before writing a command, name the agent that runs it and confirm
 that agent can. Two blockers in this library came from skipping that step:
 
 - An agent cannot invoke a `disable-model-invocation` skill **where that flag is
-  honoured** — OpenCode ignores it (`docs/ai-config-sync.md` §5). To reuse another
-  skill's method, have the agent read `~/.agents/skills/<other>/SKILL.md` and
+  honoured** — it is enforced by dsh and Claude Code only. OpenCode ignores it and
+  Codex does not filter on it (`docs/ai-config-sync.md` §5), so on those two the
+  flagged skill is reachable unprompted. To reuse another skill's method, have the
+  agent read `~/.agents/skills/<other>/SKILL.md` and
   follow it, the way `harden` §6 reaches `polish`.
 - An agent's shell has no terminal, and a command that reads its answers from
   stdin fails *silently* without one: `git add -p` hits EOF, stages nothing, and

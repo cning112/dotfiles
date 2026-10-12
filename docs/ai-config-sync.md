@@ -128,7 +128,7 @@ Claude Code sees exactly the names listed in `claude/skills-enabled.txt` and not
 is the source of truth and is deliberately not restated here — a copied count or list goes stale the
 moment a skill is added.
 
-### Skill discovery across agents (verified 2026-10-03)
+### Skill discovery across agents (verified 2026-10-03; Codex re-verified 2026-10-13 against 0.162.0)
 
 The shared library reaches each agent by a **different mechanism**, so a new skill
 is not uniformly visible. Verified against each tool on this machine rather than
@@ -137,7 +137,7 @@ inferred from docs:
 | Agent | How it finds skills | New `agents/skills/<name>/` visible? |
 |---|---|---|
 | dsh | reads `~/.agents/skills` directly | yes, immediately — no `apply` needed |
-| Codex | host root `~/.agents/skills` (evidence: its log lists `(file: ~/.agents/skills/<name>/SKILL.md)`) | yes, immediately — no `apply` needed |
+| Codex | host root `~/.agents/skills` (evidence: its live session records a `### Skill roots` table containing `~/.agents/skills` and resolving the library's skills through it, and a run whose working directory was outside this repo still listed them) | yes, immediately — no `apply` needed |
 | OpenCode | scans `~/.config/opencode/{skill,skills}` and `<project>/.opencode/{skill,skills}`, **plus** every path in `skills.paths` | yes — `opencode.jsonc` sets `skills.paths = ["{env:HOME}/.agents/skills"]` |
 | Claude Code | only `~/.claude/skills/`, per name | **no** — add the name to `claude/skills-enabled.txt`, then `apply` |
 
@@ -149,14 +149,14 @@ Consequences worth remembering:
   mechanism; it never reads `~/.agents/skills` itself.
 - `{env:HOME}` interpolation inside `skills.paths` is confirmed working: OpenCode
   resolved all 44 shared skills (up from its own 8) with no `~` expansion needed.
-- `disable-model-invocation: true` removes a skill from the model-visible catalog
-  (dsh hides every skill carrying the flag) while leaving it user-invocable via `/name`. Omit
-  it for skills an agent should reach for on its own. OpenCode is the exception —
-  it ignores the flag (see *Skill invocation across agents* below).
+- `disable-model-invocation: true` leaves a skill user-invocable via `/name` everywhere, but only
+  **dsh and Claude Code** remove it from the model-visible catalog. Omit
+  it for skills an agent should reach for on its own. Codex and OpenCode both leave
+  flagged skills in the model's catalog — see *Skill invocation across agents* below.
 - Windows: junction-based `~/.agents/skills` discovery is still unverified for
   OpenCode's `skills.paths` (see the open items in §8).
 
-### Skill invocation across agents (verified 2026-10-03)
+### Skill invocation across agents (verified 2026-10-03; Codex re-verified 2026-10-13 against 0.162.0)
 
 Discovery answers whether an agent can *see* a skill; this answers how you
 *reach* one, and the two are not the same question. Verified against each tool's
@@ -166,8 +166,12 @@ own binary rather than inferred from docs:
 |---|---|---|
 | dsh | yes | the `/` menu — the only entry point for a user-only skill; matches an ordered subsequence of the name, prefix hits first |
 | Claude Code | yes | `/name` |
-| Codex | yes — the key is listed in its embedded skill-authoring guide, beside `user-invocable` and `argument-hint` | slash command, with `$ARGUMENTS` |
+| Codex | **no** — accepted, but not enforced. Both frontmatter keys occur once each in its binary, inside the embedded authoring guide, with no corresponding field names and no invocability filter | `/name` slash command, with `$ARGUMENTS` / `$0` / `$1` expansion |
 | OpenCode | **no** — the flag is ignored, not the skill | unverified; and the agent can reach the skill unprompted |
+
+Codex is the row worth revisiting: the flag is documented by Codex's own
+authoring guide yet changes nothing observable, so a flagged skill is
+**model-invocable** there.
 
 Consequences worth remembering:
 
@@ -175,10 +179,17 @@ Consequences worth remembering:
   `skills.paths` and `frontmatter`) but does not implement the flag. Because
   entry #12 points `skills.paths` at the whole library, every user-only skill
   is **model-invocable** there — the agent can reach them unprompted.
-- Evidence differs by row: dsh is read from its own bundle, Codex from the
-  authoring guide embedded in its binary, OpenCode from the key's *absence* in a
-  compiled binary. Absence is strong evidence for a literal frontmatter key, but
-  it is not proof — re-probe after an OpenCode upgrade (see §8).
+- Codex reaches the same end state by a different route: it parses the frontmatter
+  and ships the flag in its authoring guide, but never filters on it. A recorded
+  session listing all 54 host skills includes `harden`, which carries the flag;
+  a control skill with the flag set and a plain one both appear in the
+  model-visible catalog.
+- Practically, "user-only" holds only for dsh and Claude Code. Anywhere else, a
+  skill that acts on its own has to guard itself in prose — which is why `harden`
+  tells the agent to stop and confirm when it is reached without the user asking.
+- Evidence differs by row: dsh is read from its own bundle, Codex and OpenCode
+  from a compiled binary. Absence is strong evidence for a literal frontmatter
+  key, but it is not proof — re-probe after either upgrade (see §8).
 
 ## 6. Secrets & per-device login
 
@@ -205,8 +216,8 @@ Notes:
 
 - `test.sh` gains an "AI config sync" section: run `status --json` with whichever runtime is available (node, else bun); exit 2 → INFO (not applied yet), 1 → FAIL (drift), 0 → PASS. It also runs `tests/ai-sync.test.mjs` — via `node --test` or `bun test`, both of which accept the filename and fail correctly — which exercises the engine against a throwaway repo copy and a fake `$HOME` and asserts that plugin-registered hooks and machine-local Codex tables survive `apply`, never reach the repo on `pull`, and do not count as drift. It also checks the skill wiring: that `opencode.jsonc` declares `skills.paths` pointing at the shared library, and that every skill's frontmatter `name` matches its directory.
 - Windows: manual checklist (status clean + per-tool smoke test).
-- Empirical open items to confirm on real machines: (1) Claude settings writer vs symlink behavior on current version (could upgrade to LINK later); (2) junction-based skill discovery on Windows; (3) which OpenCode line is installed (v1 files vs v2 SQLite auth); (4) rtk availability on Windows; (5) whether OpenCode implements `disable-model-invocation` (2.0.22 does not — re-probe after upgrades).
-- **Known limitation — OpenCode can invoke any flagged skill unprompted.** Because 2.0.22 ignores the flag and `opencode.jsonc` hands it the whole library through `skills.paths`, all 24 user-invoked skills are model-invocable there. `harden` and `polish` guard themselves in prose; the 21 upstream-installed ones cannot be corrected locally, since `agents/.skill-lock.json` records each one's folder hash and an edit is discarded at the next update. Two carry weight: `implement`'s body ends "Commit your work to the current branch", and `writing-great-skills:16` states the flag as a universal guarantee. Either narrow `skills.paths` or re-probe after an upgrade.
+- Empirical open items to confirm on real machines: (1) Claude settings writer vs symlink behavior on current version (could upgrade to LINK later); (2) junction-based skill discovery on Windows; (3) which OpenCode line is installed (v1 files vs v2 SQLite auth); (4) rtk availability on Windows; (5) whether OpenCode implements `disable-model-invocation` (2.0.22 does not — re-probe after upgrades); (6) whether Codex starts enforcing it (0.162.0 does not — re-probe after upgrades).
+- **Known limitation — "user-invoked" is a guarantee on only two of the four agents.** `disable-model-invocation: true` is enforced by dsh and Claude Code. OpenCode ignores it (2.0.22), and Codex accepts it without ever filtering on it (0.162.0), so flagged skills stay model-visible there. 26 skills in the library carry the flag. `harden`, `polish`, and `adversarial-review` guard themselves in prose; the upstream-installed ones cannot be corrected locally, since `agents/.skill-lock.json` records each one's folder hash and an edit is discarded at the next update. Two carry weight: `implement`'s body ends "Commit your work to the current branch", and `writing-great-skills` presents the flag as the way to a user-invoked skill without noting that two agents do not implement it. Either narrow `skills.paths` / `~/.agents/skills` per agent or re-probe after an upgrade.
 
 ## 9. Rollout
 
