@@ -166,12 +166,36 @@ own binary rather than inferred from docs:
 |---|---|---|
 | dsh | yes | the `/` menu — the only entry point for a user-only skill; matches an ordered subsequence of the name, prefix hits first |
 | Claude Code | yes | `/name` |
-| Codex | **no** — accepted, but not enforced. Both frontmatter keys occur once each in its binary, inside the embedded authoring guide, with no corresponding field names and no invocability filter | `/name` slash command, with `$ARGUMENTS` / `$0` / `$1` expansion |
+| Codex | **no** — accepted, but not enforced. Both frontmatter keys occur once each in its binary, inside the embedded authoring guide, with no corresponding field names and no invocability filter | `$name` — inline, the body lands in the prompt. `/name` also resolves, but only names the skill and leaves the agent to read the file. **Skills do not appear in the `/` popup** (see below) |
 | OpenCode | **no** — the flag is ignored, not the skill | unverified; and the agent can reach the skill unprompted |
 
 Codex is the row worth revisiting: the flag is documented by Codex's own
 authoring guide yet changes nothing observable, so a flagged skill is
 **model-invocable** there.
+
+#### Codex: no slash-command autocomplete for skills
+
+Confirmed 2026-10-13 on 0.162.0, because the earlier claim of "slash command, with
+`$ARGUMENTS`" was read off the authoring guide rather than tested:
+
+- `/harden` and `/sentinel-probe` (a scratch skill) **both resolve** — the model
+  announces "I'm using the `harden` skill" and proceeds. So `/name` is a real
+  invocation path, and Codex's `$ARGUMENTS` machinery is genuine.
+- But neither appears in the `/` popup. A typed `/name` is not autocompleted or
+  listed; the popup carries the built-in commands.
+- The two routes are not equivalent, and the difference is mechanical. `$name`
+  puts the skill body **inline** in the user turn (`[skill:$…` mention syntax,
+  and the binary's own trigger rule reads *"If the user names a skill (with
+  `$SkillName` or plain text)…"*). `/name` only *names* the skill, leaving the
+  model to shell out and read the file. In a `--sandbox read-only` run,
+  `$sentinel-probe` returned the skill's computed sentinel while `/sentinel-probe`
+  failed with *"the sandbox rejected every attempt to read its `SKILL.md`"*.
+- Practical consequence: in a normal session both routes work, but they fail
+  differently. `$name` cannot be blocked by a sandbox, because the content is
+  already in the turn. `/name` degrades when file access is restricted, since the
+  body still has to be fetched. Prefer `$name` when sandboxing is in play — and
+  note that `agents/skills/` is read through the `~/.agents/skills` symlink, so
+  an agent confined to its own workspace may not be able to read a skill at all.
 
 Consequences worth remembering:
 
@@ -184,6 +208,9 @@ Consequences worth remembering:
   session listing all 54 host skills includes `harden`, which carries the flag;
   a control skill with the flag set and a plain one both appear in the
   model-visible catalog.
+- Codex and dsh are opposites on discovery: dsh's `/` menu is the *only* route to
+  a user-only skill, while on Codex the `/` menu is the one route that does not
+  list it.
 - Practically, "user-only" holds only for dsh and Claude Code. Anywhere else, a
   skill that acts on its own has to guard itself in prose — which is why `harden`
   tells the agent to stop and confirm when it is reached without the user asking.
@@ -216,7 +243,7 @@ Notes:
 
 - `test.sh` gains an "AI config sync" section: run `status --json` with whichever runtime is available (node, else bun); exit 2 → INFO (not applied yet), 1 → FAIL (drift), 0 → PASS. It also runs `tests/ai-sync.test.mjs` — via `node --test` or `bun test`, both of which accept the filename and fail correctly — which exercises the engine against a throwaway repo copy and a fake `$HOME` and asserts that plugin-registered hooks and machine-local Codex tables survive `apply`, never reach the repo on `pull`, and do not count as drift. It also checks the skill wiring: that `opencode.jsonc` declares `skills.paths` pointing at the shared library, and that every skill's frontmatter `name` matches its directory.
 - Windows: manual checklist (status clean + per-tool smoke test).
-- Empirical open items to confirm on real machines: (1) Claude settings writer vs symlink behavior on current version (could upgrade to LINK later); (2) junction-based skill discovery on Windows; (3) which OpenCode line is installed (v1 files vs v2 SQLite auth); (4) rtk availability on Windows; (5) whether OpenCode implements `disable-model-invocation` (2.0.22 does not — re-probe after upgrades); (6) whether Codex starts enforcing it (0.162.0 does not — re-probe after upgrades).
+- Empirical open items to confirm on real machines: (1) Claude settings writer vs symlink behavior on current version (could upgrade to LINK later); (2) junction-based skill discovery on Windows; (3) which OpenCode line is installed (v1 files vs v2 SQLite auth); (4) rtk availability on Windows; (5) whether OpenCode implements `disable-model-invocation` (2.0.22 does not — re-probe after upgrades); (6) whether Codex starts enforcing it, and whether skills ever reach its `/` popup (0.162.0 does neither — re-probe after upgrades).
 - **Known limitation — "user-invoked" is a guarantee on only two of the four agents.** `disable-model-invocation: true` is enforced by dsh and Claude Code. OpenCode ignores it (2.0.22), and Codex accepts it without ever filtering on it (0.162.0), so flagged skills stay model-visible there. 26 skills in the library carry the flag. `harden`, `polish`, and `adversarial-review` guard themselves in prose; the upstream-installed ones cannot be corrected locally, since `agents/.skill-lock.json` records each one's folder hash and an edit is discarded at the next update. Two carry weight: `implement`'s body ends "Commit your work to the current branch", and `writing-great-skills` presents the flag as the way to a user-invoked skill without noting that two agents do not implement it. Either narrow `skills.paths` / `~/.agents/skills` per agent or re-probe after an upgrade.
 
 ## 9. Rollout

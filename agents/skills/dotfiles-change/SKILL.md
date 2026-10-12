@@ -49,12 +49,21 @@ Two frontmatter rules:
 
 - `name` must match the directory name.
 - Omit `disable-model-invocation` to let agents auto-invoke the skill. Set it to
-  `true` to keep the skill user-invocable only (`/name`). Only **dsh and Claude
-  Code** then hide it from their model catalog. OpenCode ignores the flag, and
-  Codex accepts it without filtering on it — verified live on 0.162.0, where a
-  flagged skill and a plain one both appeared in the model-visible catalog
+  `true` to keep the skill user-invocable only. Only **dsh and Claude Code** then
+  hide it from their model catalog. OpenCode ignores the flag, and Codex accepts
+  it without filtering on it — verified live on 0.162.0, where a flagged skill and
+  a plain one both appeared in the model-visible catalog
   (`docs/ai-config-sync.md` §5). So "user-only" holds on half the agents, and a
   skill that acts on its own has to guard itself in prose.
+
+How to hand a user-only skill to each agent — the entry points are not the same:
+
+| Agent | Route |
+| --- | --- |
+| dsh | `/name` from the `/` menu |
+| Claude Code | `/name` |
+| Codex | **`$name`** — inline. `/name` also resolves but only asks the model to read the `SKILL.md` itself, and skills are **absent from Codex's `/` popup** entirely |
+| OpenCode | reachable unprompted, so no route is needed |
 
 Skills named in `agents/.skill-lock.json` are **upstream-installed**. The lock stores each one's folder
 hash as the manager's record of what it installed, so never edit one in place: a local edit drifts from
@@ -71,7 +80,9 @@ that agent can. Two blockers in this library came from skipping that step:
   Codex does not filter on it (`docs/ai-config-sync.md` §5), so on those two the
   flagged skill is reachable unprompted. To reuse another skill's method, have the
   agent read `~/.agents/skills/<other>/SKILL.md` and
-  follow it, the way `harden` §6 reaches `polish`.
+  follow it, the way `harden` §6 reaches `polish`. On Codex prefer `$name` over
+  `/name`: `$name` inlines the body, while `/name` only names the skill and leaves
+  the agent to read the file.
 - An agent's shell has no terminal, and a command that reads its answers from
   stdin fails *silently* without one: `git add -p` hits EOF, stages nothing, and
   still exits 0. Piping the answers works but is brittle, so prefer a route that
