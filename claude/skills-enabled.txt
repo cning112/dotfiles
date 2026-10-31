@@ -1,10 +1,10 @@
-adversarial-review
 caveman
 design-an-interface
 diagnose
 dotfiles-change
 edit-article
 harden
+hostile-review
 obsidian-vault
 polish
 request-refactor-plan

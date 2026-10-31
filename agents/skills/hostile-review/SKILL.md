@@ -1,10 +1,10 @@
 ---
-name: adversarial-review
+name: hostile-review
 description: Red-team a change before it ships — hunt the blockers the author is blind to, and never accept the author's own claims as evidence.
 disable-model-invocation: true
 ---
 
-# Adversarial review
+# Hostile review
 
 Read the change **cold** as a hostile stranger who never saw the conversation that produced it: assume
 the **design, the implementation, and the tests are wrong**, and make the artifact carry the burden of proof.

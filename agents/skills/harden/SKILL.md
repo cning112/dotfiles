@@ -1,6 +1,6 @@
 ---
 name: harden
-description: Drive the review–fix loop until a change has no blockers left — a fresh adversarial review each round, fixes that earn their own review, then polish and one last look.
+description: Drive the review–fix loop until a change has no blockers left — a fresh hostile review each round, fixes that earn their own review, then polish and one last look.
 disable-model-invocation: true
 ---
 
@@ -10,8 +10,8 @@ Take a change to **no blockers** by looping: review cold → fix → review cold
 break it. The reviewer is fresh every round, and the fixer is never the reviewer. And a fix is *new,
 unreviewed code*: it does not inherit the verdict of the round that asked for it.
 
-Adversarial review is a skill in its own right; this one drives it. Read
-`~/.agents/skills/adversarial-review/SKILL.md` and hand its body to each reviewer **verbatim** as the
+Hostile review is a skill in its own right; this one drives it. Read
+`~/.agents/skills/hostile-review/SKILL.md` and hand its body to each reviewer **verbatim** as the
 brief, rather than restating the method here and letting the two drift apart.
 
 **This skill edits and commits.** Most agents hide it from their own catalog, but OpenCode ignores
